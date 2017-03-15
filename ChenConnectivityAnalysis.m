@@ -58,6 +58,8 @@ function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, d
                 % dividing by k(k-1) effectively scales the sum of intensity into an average per cell
             [C_pos,C_neg,output.average_clustering_coeff,Ctot_neg] = clustering_coef_wu_sign(fc_matrix,1);
             output.clustering_coeff_distribution = clustering_coef_wu(fc_matrix);
+        %MODULARITY
+            [Ci output.modularity] = modularity_und(fc_matrix);
         %CHARACTERISTIC PATH
             % Explanation: Average path between all nodes in network (fxnal segregation measure)
                 % A path between two nodes is the inverse of the connectivity weight (1/weight).
