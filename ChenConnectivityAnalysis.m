@@ -67,11 +67,13 @@ function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, d
                 % Therefore, we must first convert the FC matrix into a 'distance' matrix of paths.
                 % All the nonzero, nonNaN paths between all nodes are then averaged into one number.
             distance_matrix = weight_conversion(fc_matrix,'lengths');
-            output.chracteristic_path = charpath(distance_matrix);
+            D = distance_matrix; % let's get rid of zero columns
+            D( all(~D,2), : ) = [];
+            D( :, all(~D,1) ) = [];
+            [output.chracteristic_path, output.global_efficiency] = charpath(D);
         %GLOBAL EFFICIENCY
             % Explanation: Average inverse of characteristic path for all nodes in the network (fxnal segregation measure)
-            D = distance_matrix(distance_matrix~=0); % to prepare for inverse, to avoid infinite
-            output.global_efficiency = mean(1./D);    
+            %output.global_efficiency = mean(1./D);    
         %BETWEENNESS CENTRALITY
             % Explanation: Fraction of paths in network that contain each node
                 % The nodes with greatest centrality are "hub" nodes
@@ -79,7 +81,10 @@ function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, d
                 % ...passes through any one node. The greater number of paths through the node, the greater centrality
                 % PROBLEM: Our centrality ouptut only shows lots of zero entries...I would expect all values to have ...
                 % ...nonzero entries. I will consider reaching out to the algorithm creator.
-            output.betweenness = betweenness_wei(distance_matrix);
+            B = betweenness_wei(distance_matrix);
+            %must normalize
+            n = numel(fc_matrix);
+            output.betweenness = B./((n-1)*(n-2));
         %save output;
             t = datetime([], [], []);
             t = datetime('now','TimeZone','local','Format','d-MM-y_HH_mm_ss');
