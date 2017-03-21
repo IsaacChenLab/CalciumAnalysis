@@ -19,8 +19,10 @@ A = zeros(N);
 C = zeros(N);
 Nsur = params.FC.CC.Nsur;
 maxlag = params.FC.CC.maxlag; % 500 ms
+upd = textprogressbar(N);
 for i=1:N
     multiWaitbar('Functional connectivity: cross-correlation',i/N);
+    upd(i);
     if(params.parallel)
         parfor j=1:N
             if(i~=j && ~isempty(s.Spikes_cell{i}) && ~isempty(s.Spikes_cell{j}))

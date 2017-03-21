@@ -165,7 +165,6 @@ for i = 1:length(FNames) % folders
                 multiWaitbar('Functional connectivity: Transfer entropy',0,'Name',y);
             end
         end
-        multiWaitbar('Modulatory Louvain',0);
         if(params.analyze.controllability)
             multiWaitbar('Analyzing network controllability & driver nodes',0);
         end
@@ -257,7 +256,6 @@ for i = 1:length(FNames) % folders
             fprintf('\tEstimating functional connectivity\n');
             if(params.FC.method_idx==1)
                 [A,C] = FC_crosscorr(processed_analysis(j));
-                disp('passed FC_crosscorr but not clustering.');
                 clu = clustering_coef_bu(A);
                 
                 % try
@@ -269,7 +267,6 @@ for i = 1:length(FNames) % folders
                 Ci = zeros(N,1);
                 Q = 0;
                 d = sum(A);
-                disp('passed FC_crosscorr');
 
                 processed_analysis(j).FC.CC.A = A;
                 processed_analysis(j).FC.CC.C = C;
@@ -279,7 +276,6 @@ for i = 1:length(FNames) % folders
                 multiWaitbar('Functional connectivity: cross-correlation',1,'Color','g');
                 
                 multiWaitbar('Analyzing network controllability & driver nodes','Busy');
-                disp('started controllability');
                 [Nd,drivernodes,Nconfigs] = ExactControllability(A,'plotting',0);
                 processed_analysis(j).FC.CC.Controllability.Nd = Nd;
                 processed_analysis(j).FC.CC.Controllability.drivernodes = drivernodes;
