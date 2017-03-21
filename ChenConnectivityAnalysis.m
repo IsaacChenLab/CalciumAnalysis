@@ -1,4 +1,4 @@
-function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, data_path, only_active_neurons)
+function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, data_path, only_active_neurons, file_name_addition)
 %Computes functional network analysis metrics
     %input parameters
     if exist('directory_path', 'var') == 0
@@ -9,6 +9,11 @@ function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, d
     end
     if exist('only_active_neurons', 'var') == 0
         only_active_neurons = 0;
+    end
+    if exist('file_name_addition', 'var') == 0
+        file_name_addition = '';
+    else
+        file_name_addition = strcat(file_name_addition, '_');
     end
     %load test data
         % CROSS CORRELATION OUTPUT
@@ -88,15 +93,15 @@ function [ChenConnectivityAnalysis] = ChenConnectivityAnalysis(directory_path, d
         %save output;
             t = datetime([], [], []);
             t = datetime('now','TimeZone','local','Format','d-MM-y_HH_mm_ss');
-            mkdir(strcat(directory_path,char(t)));
-            csvwrite(strcat(directory_path,char(t), '/degree_distribution.csv'), output.degree_distribution);
-            csvwrite(strcat(directory_path,char(t), '/clustering_coeff_distribution.csv'), output.clustering_coeff_distribution);
-            csvwrite(strcat(directory_path, char(t), '/betweenness.csv'), output.betweenness);
+            mkdir(strcat(directory_path, file_name_addition, char(t)));
+            csvwrite(strcat(directory_path, file_name_addition, char(t), '/degree_distribution.csv'), output.degree_distribution);
+            csvwrite(strcat(directory_path, file_name_addition, char(t), '/clustering_coeff_distribution.csv'), output.clustering_coeff_distribution);
+            csvwrite(strcat(directory_path, file_name_addition, char(t), '/betweenness.csv'), output.betweenness);
             output2 = output;
             output2.degree_distribution = 'double';
             output2.clustering_coeff_distribution = 'double'; 
             output2.betweenness = 'double';
             temp_table = struct2table(output2);
-            writetable(temp_table,strcat(directory_path,char(t),'/network_summary.csv'));
+            writetable(temp_table,strcat(directory_path, file_name_addition, char(t),'/network_summary.csv'));
 end
 
