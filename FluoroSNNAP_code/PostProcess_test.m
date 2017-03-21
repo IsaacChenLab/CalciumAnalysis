@@ -1,20 +1,13 @@
-function processed_analysis = PostProcess_test(varargin)
+function processed_analysis = PostProcess_test(selected_folder)
 warning off
 % Run this function after AnalyzeData.m to process the raw data - namely
 % to detect spikes.
-
-if(nargin>0)
+filenumber = 1;
+if(filenumber>0)
     SOURCE_PATH = [];
     TARGET_PATH = [];
-    FNames = varargin{1};
-    if(nargin==2)
-        files = varargin{2};
-    end
-else
-    % Get basic parameters
-    SOURCE_PATH = Read_Params('SOURCE_PATH');
-    TARGET_PATH = Read_Params('TARGET_PATH');
-    FNames = Read_FNames;
+    Fnames = cell(1);
+    FNames{1} = selected_folder;
 end
 if(ispc)
     slash = '\';
@@ -23,12 +16,14 @@ else
 end
 try
     load('params.mat');
+    params.FC.method_idx = 1;
+    params.parallel = 0;
+    save('params.mat','params');
 catch
     errordlg('Could not load params.mat. Please run Analyze -> Preferences -> Revert to defaults','File not found','modal');
     return;
 end
-
-%%
+%
 spikes = [];
 load('spikes.mat');
 for i = 1:length(FNames) % folders

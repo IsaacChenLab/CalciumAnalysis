@@ -1,4 +1,4 @@
-function Data = AnalyzeData_2()
+function Data = AnalyzeData_2(selected_folder, real_FPS)
 
 % Reads list of folders that contain .tif image stacks to compute the
 % time-series fluorescence. All .tif files in the given folder will be
@@ -13,24 +13,12 @@ function Data = AnalyzeData_2()
 
 % Output is saved as analysis.mat file in the same folder. Run PostProcess
 % function to detect spikes and other analyses.
-real_FPS = 10;
-filepath = cell(1);
-filepath{1} = '/Users/mschaff/Documents/new_rat_test';
 filenumber = 1;
-% GUI to get folder with .tif file
-    selected_folder = uigetdir(pwd,'Select a folder containing tiff stacks');
-    if(ispc)
-        slash = '\';
-    else
-        slash = '/';
-    end
-    if any(size(dir([selected_folder slash '*.tif' ]),1))
-        disp(dir([selected_folder slash '*.tif']));
-    else
-        msg = 'There is no .tif file in the selected directory.';
-        error(msg);
-        return;
-    end
+if(ispc)
+    slash = '\';
+else
+    slash = '/';
+end
 if(filenumber>0)
     SOURCE_PATH = [];
     TARGET_PATH = [];
@@ -264,4 +252,5 @@ for i = 1:length(FNames) % folders
         save(savefile, 'analysis');
     end
     multiWaitbar('CloseAll','Name','');
+    %PostProcess_test(selected_folder);
 end
