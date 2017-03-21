@@ -88,7 +88,7 @@ persistent FIGH;
 cancel = false;
 
 % Check basic inputs
-error( nargchk( 1, inf, nargin ) ); %#ok<NCHKN> - kept for backwards compatibility
+error( nargoutchk( 1, inf, nargin ) ); %#ok<NCHKN> - kept for backwards compatibility
 if ~ischar( label )
     error( 'multiWaitbar:BadArg', 'LABEL must be the name of the progress entry (i.e. a string)' );
 end
