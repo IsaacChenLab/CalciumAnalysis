@@ -33,7 +33,9 @@ if(filenumber>0)
 end
 Folder = FNames{1};
 
-addpath('../textprogressbar');
+% progressbar
+progresspath = strcat(fileparts(pwd()), '\', 'textprogressbar');
+addpath(progresspath);
 
 
 %% For each file in each folder, compute either whole image or individual
