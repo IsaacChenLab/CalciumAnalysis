@@ -34,7 +34,7 @@ end
 Folder = FNames{1};
 
 % progressbar
-progresspath = strcat(fileparts(pwd()), '\', 'textprogressbar');
+progresspath = strcat(fileparts(pwd()), slash, 'textprogressbar');
 addpath(progresspath);
 
 
