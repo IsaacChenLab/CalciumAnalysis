@@ -111,6 +111,7 @@ for i = 1:length(FNames) % folders
             msgbox('FPS not set. Assuming acquisition rate of 10fps');
         end
         processed_analysis(j).fps = fps;
+        params.fps = fps;
     end
     
     
@@ -204,7 +205,8 @@ for i = 1:length(FNames) % folders
                 dF_cell(:,k) = (F(:,k)-F0)./F0;
             end
             try
-            for it=interval_idx(2):frames
+                next_frame = floor(interval_idx(2)) + 1;
+            for it=next_frame:frames
                 if mod(it,frames)==1
                     multiWaitbar('Converting raw fluorescence to deltaF/F',it/frames);
                 end
@@ -223,7 +225,6 @@ for i = 1:length(FNames) % folders
             processed_analysis(j).N = N;
             
             Spikes_cell = cell(N,1);
-            
             
             fprintf('\tDetecting onset of calcium transients\n');
             for k = 1:N % Get the spikes for all cells
