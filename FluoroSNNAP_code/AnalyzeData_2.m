@@ -16,11 +16,10 @@ function Data = AnalyzeData_2(selected_folder, real_FPS)
 filenumber = 1;
 if(ispc)
     slash = '\';
-    progresspath = strcat(fileparts(pwd()), slash, 'textprogressbar');
 else
     slash = '/';
-    progresspath = strcat(pwd(), slash, 'textprogressbar');
 end
+
 if(filenumber>0)
     SOURCE_PATH = [];
     TARGET_PATH = [];
@@ -34,9 +33,6 @@ if(filenumber>0)
     end
 end
 Folder = FNames{1};
-
-% progressbar
-addpath(progresspath);
 
 %% For each file in each folder, compute either whole image or individual
 %% cell intensity depending on flag set by ANALYSIS_TYPE

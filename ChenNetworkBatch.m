@@ -20,6 +20,8 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
     % FLUOROSNNAP
         % Run FluoroSNNAP ROI Analysis
         addpath('FluoroSNNAP_code');
+        addpath('textprogressbar');
+        addpath(['FluoroSNNAP_code' slash 'oopsi-master']);
         AnalyzeData_2(selected_folder, real_FPS);
         % Run FluoroSNNAP Processing
         PostProcess_test(selected_folder);
