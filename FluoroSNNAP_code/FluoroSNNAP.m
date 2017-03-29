@@ -2059,6 +2059,44 @@ colormap('jet');
 title(sprintf('Pair-wise image frame correlations. Low values indicate possible misalignment (motion artifact)'));
 xlabel('Frame #'); ylabel('Frame #');
 
+% --------------------------------------------------------------------
+function dF_Callback_withEventOverlay(hObject, eventdata, handles)
+% hObject    handle to dF (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+try
+    if(handles.curr_folder_idx ==0 || handles.curr_file_idx ==0)
+        errordlg('Please first select a folder and a file from the two listboxes.','Bad Input','modal')
+        return;
+    end
+    load([handles.curr_folder '/analysis-' handles.curr_file(1:end-4) '.mat'],'data');
+catch
+    errordlg(['Please select a file first and make sure an analysis-' handles.curr_file(1:end-4) '.mat exists'],'modal');
+    return;
+end
+figure;
+t = 0:1/data.fps:size(data.F_cell,2)/data.fps-1/data.fps;
+sig = data.dF_cell;
+
+% calculate shift
+shiftnew = 5:5:size(data.dF_cell,1)*5;
+shiftnew = shiftnew';
+%plot data
+plot(t,sig+shiftnew)
+hold on
+for i=1:data.N
+    spks = data.Spikes_cell{i};
+    if(~isempty(spks))
+        plot(spks/data.fps,i*5,'b.');
+    end
+end
+hold off
+% edit axes
+set(gca,'ytick',mean(sig+shiftnew,2),'yticklabel',1:data.N)
+grid on
+ylim([mi(1) max(max(shift+sig))]);
+xlabel('Time (s)'); ylabel('Neuron ID');
+title(data.filename);
 
 % --------------------------------------------------------------------
 function dF_Callback(hObject, eventdata, handles)
