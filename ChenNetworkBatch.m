@@ -4,15 +4,32 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
     if exist('real_FPS', 'var') == 0
         error('Frames per second is not set.');
     end
-    % GUI to get folder with .tif file
-    selected_folder = uigetdir(pwd,'Select a folder containing tiff stacks');
+    % handle slashes
     if(ispc)
         slash = '\';
     else
         slash = '/';
     end
-    if any(size(dir([selected_folder slash '*.tif' ]),1))
-    else
+    % GUI to get folder with .tif file
+    selected_folders = uigetfile_n_dir('','Select folders containing tiff stacks');
+    % make sure all folders have .tif files
+    for i=1:numel(selected_folders)
+        selected_folder = selected_folders{i};
+        if ~any(size(dir([selected_folder slash '*.tif' ]),1))
+            msg = ['There is no .tif file in the selected directory: ' selected_folder];
+            error(msg);
+            return;
+        end
+    end
+    %loop through files & analyze
+    disp(['These folders have been selected:' strjoin(selected_folders, '\n')]);  
+    for i=1:numel(selected_folders)
+        
+    selected_folder = selected_folders{i};
+    disp(['Batch analysis begun on ' selected_folder]);
+    
+    %just check .tif existence again in case someone moved the files
+    if ~any(size(dir([selected_folder slash '*.tif' ]),1))       
         msg = 'There is no .tif file in the selected directory.';
         error(msg);
         return;
@@ -118,6 +135,7 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
             output2.betweenness = 'double';
             temp_table = struct2table(output2);
             writetable(temp_table,strcat(BCT_directory, slash, 'network_summary.csv'));
-            
+    end
+          disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);  
 end
 
