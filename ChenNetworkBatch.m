@@ -141,6 +141,7 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
          %save events & cell summary stats
             cell_directory = strcat(selected_folder, slash, 'Events_Cell');
             mkdir(cell_directory);
+            cprintf('*blue','%s\n', ['Saving events & cell metrics to ' cell_directory]);
             events = processed_analysis.dat(:,2);
             single_cell_summary = {
                'Mean Events' mean(events);
@@ -166,6 +167,14 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
                 end
                 fclose(fid);
             end
+         %save cell by cell event data
+            header = {'ROI Number' 'Total Events' 'Events/Sec'};
+            headerJoined = strjoin(header, ',');
+            fid = fopen([cell_directory slash 'events_by_cell.csv'],'w');
+            fprintf(fid,'%s\n',headerJoined);
+            fclose(fid);
+            data = horzcat(transpose(1:numel(events)), events, events./(processed_analysis.Frames/real_FPS));
+            dlmwrite([cell_directory slash 'events_by_cell.csv'],data,'-append');
     end
           disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);  
 end
