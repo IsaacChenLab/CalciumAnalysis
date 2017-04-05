@@ -144,12 +144,20 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
             events = processed_analysis.dat(:,2);
             single_cell_summary = {
                'Mean Events' mean(events);
+               'Mean Events per Second' mean(events)/(processed_analysis.Frames/real_FPS);
+               'Mean Events (Active Cells)' mean(events(events > 0));
+               'Mean Events per Second (Active Cells)' mean(events(events > 0))/(processed_analysis.Frames/real_FPS);
                'Standard Deviation Events' std(events);
+               '0 Bin' numel(events(events == 0));
+               '1-3 Bin' numel(events(events > 0 & events < 4));
+               '4-6 Bin' numel(events(events > 3 & events < 7));
+               '7-9 Bin' numel(events(events > 6 & events < 10));
+               '10+ Bin' numel(events(events > 9));               
                'Max Events' max(events);
                'Min Events' min(events);
                'Number of Cells' numel(events);
                'Number of Active Cells' numel(events(events > 0));
-               'Fraction of Cells That Are Active' numel(events(events > 0))/numel(events)
+               'Fraction of Cells That Are Active' numel(events(events > 0))/numel(events);
             };
             fid = fopen([cell_directory slash 'events_cell_summary_stats.csv'],'wt');
             if fid>0
