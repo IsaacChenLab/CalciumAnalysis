@@ -631,7 +631,7 @@ for i = 1:length(FNames) % folders
                 dat(k,11) = clu(k);
                 end
             end
-            
+            processed_analysis(j).dat = dat;
             % Export everything to .txt file
             fid = fopen([processed_analysis(j).filename(1:end-4) '_summary.txt'],'w');
             if(fid)
@@ -842,8 +842,8 @@ for i = 1:length(FNames) % folders
                 end
                 end
                 fclose(fid);
-                
                 cprintf('*blue','%s\n', ['Summary statistics written to ' processed_analysis(j).filename(1:end-4) '_summary.txt']);
+
             else
                 cprintf('*red','%s\n','ERROR: Could not write summary statistics. Unable to create file.');
             end

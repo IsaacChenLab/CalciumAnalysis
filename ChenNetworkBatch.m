@@ -41,7 +41,7 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
         addpath(['FluoroSNNAP_code' slash 'oopsi-master']);
         AnalyzeData_2(selected_folder, real_FPS);
         % Run FluoroSNNAP Processing
-        PostProcess_test(selected_folder);
+        processed_analysis = PostProcess_test(selected_folder);
 
     %BRAIN CONNECTIVITY TOOLBOX 
         % CROSS CORRELATION OUTPUT
@@ -137,6 +137,27 @@ function [ChenNetworkBatch] = ChenNetworkBatch(real_FPS, only_active_neurons)
             output2.betweenness = 'double';
             temp_table = struct2table(output2);
             writetable(temp_table,strcat(BCT_directory, slash, 'network_summary.csv'));
+            
+         %save events & cell summary stats
+            cell_directory = strcat(selected_folder, slash, 'Events_Cell');
+            mkdir(cell_directory);
+            events = processed_analysis.dat(:,2);
+            single_cell_summary = {
+               'Mean Events' mean(events);
+               'Standard Deviation Events' std(events);
+               'Max Events' max(events);
+               'Min Events' min(events);
+               'Number of Cells' numel(events);
+               'Number of Active Cells' numel(events(events > 0));
+               'Fraction of Cells That Are Active' numel(events(events > 0))/numel(events)
+            };
+            fid = fopen([cell_directory slash 'events_cell_summary_stats.csv'],'wt');
+            if fid>0
+                for k=1:size(single_cell_summary,1)
+                    fprintf(fid,'%s,%f\n',single_cell_summary{k,:});
+                end
+                fclose(fid);
+            end
     end
           disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);  
 end
