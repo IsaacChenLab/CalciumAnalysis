@@ -198,7 +198,9 @@ function ChenNetworkBatch(real_FPS, remove_islands)
         %SAVE THE OUTPUT;
             %make the directory
             BCT_directory = strcat(selected_folder, slash, 'BCT');
-            mkdir(BCT_directory);
+            if ~exist(BCT_directory, 'dir')
+                mkdir(BCT_directory);
+            end
             cprintf('*blue','%s\n', ['Saving BCT to ' BCT_directory]);
             
             %write to separate files for all the output vectors
@@ -224,7 +226,9 @@ function ChenNetworkBatch(real_FPS, remove_islands)
         
         %save events & cell summary stats
         cell_directory = strcat(selected_folder, slash, 'Events_Cell');
-        mkdir(cell_directory);
+        if ~exist(cell_directory, 'dir')
+            mkdir(cell_directory);
+        end
         cprintf('*blue','%s\n', ['Saving events & cell metrics to ' cell_directory]);
         events = processed_analysis.dat(:,2);
         single_cell_summary = {
@@ -261,6 +265,35 @@ function ChenNetworkBatch(real_FPS, remove_islands)
         fclose(fid);
         data = horzcat(transpose(1:numel(events)), events, events./(processed_analysis.Frames/real_FPS));
         dlmwrite([cell_directory slash 'events_by_cell.csv'],data,'-append');
+        
+        %make events per cell histogram
+        f = figure('Visible', 'off');
+        histogram(events,max(events));
+        xlabel('Events per cell');
+        ylabel('Number of cells');
+        title('Event Histogram');
+        saveas(f,strcat(cell_directory, slash, 'histogram.jpg'));
+        
+        %make Ca event raster plot
+        spikes = processed_analysis.Spikes_cell;
+        x = zeros(sum(events),1);
+        y = zeros(sum(events),1);
+        p = 1;
+        for i = 1:length(spikes)
+            for j = 1:length(spikes{i})
+                x(p) = spikes{i}(j);
+                y(p) = i;
+                p = p + 1;
+            end
+        end
+        x = x ./real_FPS;
+        f = figure('Visible', 'off');
+        scatter(x,y,20,'filled');
+        xlabel('Time (s)');
+        ylabel('Cell number');
+        title('Ca Event Scatter plot');
+        saveas(f,strcat(cell_directory, slash, 'raster_plot.jpg'));
+        
     end
     
   disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);
