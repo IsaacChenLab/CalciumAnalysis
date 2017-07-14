@@ -204,11 +204,19 @@ function ChenNetworkBatch(real_FPS, remove_islands)
             cprintf('*blue','%s\n', ['Saving BCT to ' BCT_directory]);
             
             %write to separate files for all the output vectors
-            csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'degree_distribution.csv'), output.degree_distribution);
-            csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'strength_distribution.csv'), output.strength_distribution);
-            csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'clustering_coeff_distribution.csv'), output.clustering_coeff_distribution);
-            csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'eccentricities.csv'), output.eccentricities);
-            csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'betweenness_distribution.csv'), output.betweenness_distribution);
+            output_by_cell = horzcat((1:n)',output.degree_distribution, output.strength_distribution, output.eccentricities, output.clustering_coeff_distribution, output.betweenness_distribution);
+            header = 'ROI Number,Degree,Strength,Eccentricity,Clustering Coefficient,Betweenness Centrality (normalized)';
+            fid = fopen(strcat(BCT_directory,slash,bct_all_vs_active,'per_cell_measures.csv'),'w');
+            fprintf(fid,'%s\n',header);
+            fclose(fid);
+            dlmwrite(strcat(BCT_directory,slash,bct_all_vs_active,'per_cell_measures.csv'), output_by_cell, '-append');
+            
+%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'degree_distribution.csv'), output.degree_distribution);
+%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'strength_distribution.csv'), output.strength_distribution);
+%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'clustering_coeff_distribution.csv'), output.clustering_coeff_distribution);
+%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'eccentricities.csv'), output.eccentricities);
+%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'betweenness_distribution.csv'), output.betweenness_distribution);
+            
             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'rich_club_curve.csv'), output.rich_club_curve);
             
             %write the rest of the output struct to 'network_summary.csv'
@@ -249,6 +257,7 @@ function ChenNetworkBatch(real_FPS, remove_islands)
            'Fraction of Cells That Are Active' numel(events(events > 0))/numel(events);
         };
     
+        dlmwrite([cell_directory slash 'events_cell_summary_stats.csv'],[]);  %clear the file
         fid = fopen([cell_directory slash 'events_cell_summary_stats.csv'],'wt');
         if fid>0
             for k=1:size(single_cell_summary,1)
@@ -257,13 +266,14 @@ function ChenNetworkBatch(real_FPS, remove_islands)
             fclose(fid);
         end
         
-     %save cell by cell event data
+        %save cell by cell event data
+        dlmwrite([cell_directory slash 'events_by_cell.csv'],[]); %clear the file
         header = {'ROI Number' 'Total Events' 'Events/Sec'};
         headerJoined = strjoin(header, ',');
         fid = fopen([cell_directory slash 'events_by_cell.csv'],'w');
         fprintf(fid,'%s\n',headerJoined);
         fclose(fid);
-        data = horzcat(transpose(1:numel(events)), events, events./(processed_analysis.Frames/real_FPS));
+        data = horzcat((1:length(events))', events, events./(processed_analysis.Frames/real_FPS));
         dlmwrite([cell_directory slash 'events_by_cell.csv'],data,'-append');
         
         %make events per cell histogram
@@ -288,11 +298,21 @@ function ChenNetworkBatch(real_FPS, remove_islands)
         end
         x = x ./real_FPS;
         f = figure('Visible', 'off');
-        scatter(x,y,20,'filled');
+        scatter(x,y,15,'filled');
         xlabel('Time (s)');
         ylabel('Cell number');
         title('Ca Event Scatter plot');
         saveas(f,strcat(cell_directory, slash, 'raster_plot.jpg'));
+        
+        %make table of all Ca Events
+        dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), []);  %clear the file
+        fid = fopen(strcat(cell_directory, slash, 'all_events.csv'),'w');
+        fprintf(fid,'ROI, Event timings (s)\n');
+        fclose(fid);
+        for x = 1:length(spikes)
+            labelled_spikes = [x spikes{x}./real_FPS];
+            dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), labelled_spikes, '-append');
+        end
         
     end
     
