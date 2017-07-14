@@ -40,6 +40,9 @@ for i=1:N
                 dF_i = s.dF_cell(i,:);
                 dF_j = s.dF_cell(j,:);
                 r = max(xcorr(dF_i,dF_j,ceil(maxlag*s.fps),'coeff'));
+                if (r < 0)
+                    r = 0;
+                end
                 C(i,j) = r;
                 if(r > thresh)
                     A(i,j) = 1;
@@ -51,6 +54,9 @@ for i=1:N
                 Fi = Surrogate_Fluorescence(s.Spikes_cell{i},T,s.fps);
                 Fj = Surrogate_Fluorescence(s.Spikes_cell{j},T,s.fps);
                 r = xcorr(Fi,Fj,ceil(maxlag*s.fps),'coeff');
+                if (r < 0)
+                    r = 0;
+                end
                 C(i,j) = max(r);
 
                 for k=1:Nsur
