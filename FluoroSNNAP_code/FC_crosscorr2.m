@@ -17,11 +17,10 @@ function [A,C] = FC_crosscorr2(s)
 
 load('params.mat');
 thresh = params.FC_thresh;
+save('params.mat', '-append');
+
 %fprintf("xcorr threshold = %.2f\n", thresh);
-
-%fprintf("applying threshold\n");
-%fprintf("active cells only\n");
-
+    
 q = 0;
 
 [N,T] = size(s.dF_cell);
@@ -33,74 +32,44 @@ upd = textprogressbar(N);
 for i=1:N
     multiWaitbar('Functional connectivity: cross-correlation',i/N);
     upd(i);
-    %if(params.parallel)
-    if(false)
-        parfor j=1:N
-            if(i~=j && ~isempty(s.Spikes_cell{i}) && ~isempty(s.Spikes_cell{j}))
-                
+
+    for j=1:N
+        if(i~=j && ~isempty(s.Spikes_cell{i}) && ~isempty(s.Spikes_cell{j}))
+
+            if strcmpi(params.FC_method,'raw')
+                dF_i = s.dF_cell(i,:);
+                dF_j = s.dF_cell(j,:);
+                r = max(xcorr(dF_i,dF_j,ceil(maxlag*s.fps),'coeff'));
+                C(i,j) = r;
+                if(r > thresh)
+                    A(i,j) = 1;
+                    q = q+1;                     
+                end
+
+            else
                 Csur = zeros(Nsur,1);
                 Fi = Surrogate_Fluorescence(s.Spikes_cell{i},T,s.fps);
                 Fj = Surrogate_Fluorescence(s.Spikes_cell{j},T,s.fps);
                 r = xcorr(Fi,Fj,ceil(maxlag*s.fps),'coeff');
                 C(i,j) = max(r);
+
                 for k=1:Nsur
                     Nspks = length(s.Spikes_cell{j});
                     sur_spks = sort(randsample(T,Nspks));
                     F_sur_j = Surrogate_Fluorescence(sur_spks,T,s.fps);
                     r = xcorr(Fi,F_sur_j,ceil(maxlag*s.fps),'coeff');
                     Csur(k) = max(r);
-                    
                 end
+
                 if(C(i,j)>prctile(Csur,99))
                     A(i,j) = 1;
+                    q = q+1;
                 end
-            end
-        end
-    else
-        for j=1:N
-             if(i~=j && ~isempty(s.Spikes_cell{i}) && ~isempty(s.Spikes_cell{j}))
-                
-                dF_i = s.dF_cell(i,:);
-                dF_j = s.dF_cell(j,:);
-                
-                r = max(xcorr(dF_i,dF_j,ceil(maxlag*s.fps),'coeff'));
-                
-                %q = q+1;
-                
-                 if(r > thresh)
-                     A(i,j) = 1;
-                     C(i,j) = r;
-                     q = q+1;
-                     %fprintf("found connection %d\n", q);                     
-                 end
-                
-%                 Csur = zeros(Nsur,1);
-%                 Fi = Surrogate_Fluorescence(s.Spikes_cell{i},T,s.fps);
-%                 Fj = Surrogate_Fluorescence(s.Spikes_cell{j},T,s.fps);
-%                 r = xcorr(Fi,Fj,ceil(maxlag*s.fps),'coeff');
-%                 C(i,j) = max(r);
-%                 
-%                 
-%                 for k=1:Nsur
-%                     Nspks = length(s.Spikes_cell{j});
-%                     sur_spks = sort(randsample(T,Nspks));
-%                     F_sur_j = Surrogate_Fluorescence(sur_spks,T,s.fps);
-%                     r = xcorr(Fi,F_sur_j,ceil(maxlag*s.fps),'coeff');
-%                     Csur(k) = max(r);
-%                     
-%                 end
-%                 
-%                 if(C(i,j)>prctile(Csur,99))
-%                     A(i,j) = 1;
-%                     q = q+1;
-%                 else
-%                     C(i,j) = 0;
-%                 end
-
-                
             end
         end
     end
 end
 
 fprintf("number of connections %d\n", q);
+
+end
