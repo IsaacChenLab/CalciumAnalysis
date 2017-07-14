@@ -8,11 +8,10 @@ function ChenNetworkBatch(real_FPS, FC_method)
         error('Frames per second is not set.');
         return;
     end
-    
     load('params.mat');
     params.fps = real_FPS;
-    fprintf("Ca event threshold = %.2f\n", params.event_thresh);
 
+    
     if exist('FC_method', 'var') ~= 0
         params.FC_method = FC_method;
     else
@@ -28,8 +27,8 @@ function ChenNetworkBatch(real_FPS, FC_method)
     end
     fprintf("No threshold for weighted FC matrix being applied\n");
     fprintf("No exclusion of cells without events in FC matrix\n");
+    fprintf("Ca event threshold = %.2f\n", params.event_thresh);
     
-
     
     % handle slashes
     if(ispc)
@@ -158,15 +157,7 @@ function ChenNetworkBatch(real_FPS, FC_method)
             % A path between two nodes is the inverse of the connectivity weight (1/weight).
             % A shorter path means two nodes are better connected.
             length_mat = weight_conversion(fc_matrix,'lengths');
-            
-           
-            
-            %D = length_matrix;     % let's get rid of zero columns
-            %D( all(~D,2), : ) = [];
-            %D( :, all(~D,1) ) = [];
-
-            
-            
+                       
          %DISTANCE MATRIX:
             %Each matrix entry (i,j) is the length of the shortest path between nodes i and j
                 %NOTE: Previously the length matrix (where edge weights are inversed so as to represent lengths)
@@ -237,6 +228,8 @@ function ChenNetworkBatch(real_FPS, FC_method)
             
             temp_table = struct2table(output2);
             writetable(temp_table,strcat(BCT_directory, slash, bct_all_vs_active, 'network_summary.csv'));
+            
+            save(strcat(BCT_directory, slash, bct_all_vs_active, 'BCT_output.mat'), 'output');
         end
         
         %save events & cell summary stats
@@ -326,4 +319,3 @@ function ChenNetworkBatch(real_FPS, FC_method)
   disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);
   
 end
-
