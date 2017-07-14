@@ -1,16 +1,36 @@
-function ChenNetworkBatch(real_FPS, remove_islands)
+function ChenNetworkBatch(real_FPS, FC_method)
 %Computes functional network analysis metrics
     
     % normally on args are real_fps and only_active_neurons
     % error if no FPS
     
-    load('params.mat');
-    fprintf("Ca event threshold = %.2f\n", params.event_thresh);
-    %msgbox(sprintf('Ca event detection threshold set at %.2f', params.event_thresh));
-    
     if exist('real_FPS', 'var') == 0
         error('Frames per second is not set.');
+        return;
     end
+    
+    load('params.mat');
+    params.fps = real_FPS;
+    fprintf("Ca event threshold = %.2f\n", params.event_thresh);
+
+    if exist('FC_method', 'var') ~= 0
+        params.FC_method = FC_method;
+    else
+         params.FC_method = 'default';
+    end
+    save('params.mat', '-append');
+
+    
+    if strcmpi(params.FC_method, 'raw')
+        fprintf("Applying raw trace method for computing FC\n");
+    else
+        fprintf("Applying FluoroSNNAP default method for computing FC\n");
+    end
+    fprintf("No threshold for weighted FC matrix being applied\n");
+    fprintf("No exclusion of cells without events in FC matrix\n");
+    
+
+    
     % handle slashes
     if(ispc)
         slash = '\';
@@ -20,10 +40,7 @@ function ChenNetworkBatch(real_FPS, remove_islands)
     
     % GUI to get folder with .tif file
     selected_folders = uigetfile_n_dir('','Select folders containing tiff stacks');
-    
-    %feed the file directly as an argument
-    %selected_folders = {file_path};
-    
+
     % make sure all folders have .tif files
     for i=1:numel(selected_folders)
         selected_folder = selected_folders{i};
@@ -73,11 +90,6 @@ function ChenNetworkBatch(real_FPS, remove_islands)
         %Get FC Matrix to Run BCT
         load([selected_folder slash 'processed_analysis.mat']);
         fc_matrix = processed_analysis.FC.CC.C;
-
-        % Remove nodes of degree 0 from the graph
-        %if exist('remove_islands', 'var') == 0
-        %    remove_islands = 0;
-        %end
         
         for k=1:2
             switch k 
@@ -210,13 +222,8 @@ function ChenNetworkBatch(real_FPS, remove_islands)
             fprintf(fid,'%s\n',header);
             fclose(fid);
             dlmwrite(strcat(BCT_directory,slash,bct_all_vs_active,'per_cell_measures.csv'), output_by_cell, '-append');
-            
-%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'degree_distribution.csv'), output.degree_distribution);
-%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'strength_distribution.csv'), output.strength_distribution);
-%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'clustering_coeff_distribution.csv'), output.clustering_coeff_distribution);
-%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'eccentricities.csv'), output.eccentricities);
-%             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'betweenness_distribution.csv'), output.betweenness_distribution);
-            
+
+            %rich club curve has to be in its own file bc its indexed differently
             csvwrite(strcat(BCT_directory, slash, bct_all_vs_active, 'rich_club_curve.csv'), output.rich_club_curve);
             
             %write the rest of the output struct to 'network_summary.csv'
