@@ -13,13 +13,12 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
     load('params.mat');
     params.fps = real_FPS;
 
-    
+    %set parameters appropriately
     if exist('FC_method', 'var') ~= 0
         params.FC_method = FC_method;
     else
          params.FC_method = 'FluoroSNNAP default';
     end
-    
     
     if exist('FC_inactive', 'var') ~= 0
         params.FC_inactive = FC_inactive;
@@ -28,7 +27,6 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
     end
     save('params.mat', '-append');
 
-    
     if exist('FC_islands', 'var') == 0
         FC_islands = 'keep islands';
     elseif ~strcmpi(FC_islands, 'remove islands')
@@ -37,6 +35,7 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
     
     
     %feedback on the parameters
+    fprintf("\tFrames per second = %f\n", real_FPS);
     if strcmpi(params.FC_method, 'raw')
         fprintf("\tFC_method = raw trace\n");
         if strcmpi(params.FC_inactive, 'include inactive')
@@ -45,8 +44,8 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
             fprintf("\tFC_inactive = EXCLUDING cells that have zero Ca events in FC analysis\n");
         end
     else
-        fprintf("\tFC_method = FluoroSNAAP default");
-        fprintf("\tFC_inactive = EXCLUDING cells w/o Ca events (required by the deafault FC method\n");
+        fprintf("\tFC_method = FluoroSNAAP default\n");
+        fprintf("\tFC_inactive = EXCLUDING cells w/o Ca events (required by the deafault FC method)\n");
     end
     
     if strcmpi(FC_islands, 'remove islands')
@@ -119,25 +118,20 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
         load([selected_folder slash 'processed_analysis.mat']);
         fc_matrix = processed_analysis.FC.CC.C;
         
-
-        if (strcmpi(FC_islands, 'remove islands')) 
-            %disp('BCT network analysis - only active neurons');
+        % remove islands if called for
+        if (strcmpi(FC_islands, 'remove islands'))
             fc_matrix( all(~fc_matrix,2), : ) = [];
             fc_matrix( :, all(~fc_matrix,1) ) = [];
-            %bct_all_vs_active = 'no_islands.';
-%         else
-%             disp('BCT network analysis - all neurons');
-%             bct_all_vs_active = 'all.';
         end
 
     % add BCT to MATLAB path
         addpath('BCT_code');
-    %initialize variables
+    % initialize variables
          % we need this for path & centrality calculations
-    %metrics of interest
+    % metrics of interest
         output = struct();
 
-    %DENSITY
+    % DENSITY
         % Explanation: Density is the fraction of present connections to possible connections.
             % note --> it's all about nonzero FC matrix elements
             % # present connections = # nonzero matrix elements in top triangle of connection matrix 
@@ -237,11 +231,11 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
         %make parameter file
         fid = fopen(strcat(selected_folder, slash, 'analysis_parameters.txt'),'w');
         fprintf(fid,'List of paramters\n\n');
-        fprintf(fid,"\tFrames per second = %d\n", real_FPS);
+        fprintf(fid,"\tFrames per second = %f\n", real_FPS);
         fprintf(fid,"\tFC_method = %s\n", params.FC_method);
         fprintf(fid,"\tFC_inactive = %s\n", params.FC_inactive);
         fprintf(fid,"\tFC_islands = %s\n", FC_islands);
-        fprintf(fid,"\tCa event threshold = %s\n", params.event_thresh);
+        fprintf(fid,"\tCa event threshold = %.2f\n", params.event_thresh);
         fprintf(fid,"\tNo weight threshold applied to FC matrix\n");
         fclose(fid);
         
@@ -335,7 +329,7 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
         end
         x = x ./real_FPS;
         f = figure('Visible', 'off');
-        scatter(x,y,15,'filled');
+        scatter(x,y,15);
         xlabel('Time (s)');
         ylabel('Cell number');
         title('Ca Event Scatter plot');
@@ -350,7 +344,6 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
             labelled_spikes = [x spikes{x}./real_FPS];
             dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), labelled_spikes, '-append');
         end
-        
     end
     
   disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);
