@@ -3,6 +3,8 @@ warning off
 % Run this function after AnalyzeData.m to process the raw data - namely
 % to detect spikes.
 
+fprintf("post process running\n");
+
 if(nargin>0)
     SOURCE_PATH = [];
     TARGET_PATH = [];
@@ -260,7 +262,8 @@ for i = 1:length(FNames) % folders
             % Functional connectivity
             fprintf('\tEstimating functional connectivity\n');
             if(params.FC.method_idx==1)
-                [A,C] = FC_crosscorr(processed_analysis(j));
+                %[A,C] = FC_crosscorr(processed_analysis(j));
+                [A,C] = FC_crosscorr2(processed_analysis(j));
                 clu = clustering_coef_bu(A);
                 
                 try
@@ -387,7 +390,8 @@ for i = 1:length(FNames) % folders
                 
             elseif(params.FC.method_idx==6)
                 % Do all
-                [A,C] = FC_crosscorr(processed_analysis(j));
+                %[A,C] = FC_crosscorr(processed_analysis(j));
+                [A,C] = FC_crosscorr2(processed_analysis(j));
                 clu = clustering_coef_bu(A);
                 try
                     [Ci,Q] = modularity_louvain_und(A);

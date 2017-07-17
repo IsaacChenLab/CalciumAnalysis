@@ -26,7 +26,7 @@ function BC=betweenness_wei(G)
 %   Mika Rubinov, UNSW/U Cambridge, 2007-2012
 
 n=length(G);
-% E=find(G); G(E)=1./G(E);        %invert weights
+% E=find(G); G(E)=1./G(E);      %invert weights
 BC=zeros(n,1);                  %vertex betweenness
 
 for u=1:n

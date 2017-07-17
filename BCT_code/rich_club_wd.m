@@ -11,7 +11,7 @@ function   [Rw] = rich_club_wd(CIJ,varargin)
 %       CIJ:        weighted directed connection matrix
 %
 %       k-level:    (optional) max level of RC(k).
-%                   (by default k-level quals the maximal degree of CIJ)
+%                   (by default k-level equals the maximal degree of CIJ)
 %
 %   Output:
 %       Rw:         rich-club curve
@@ -40,9 +40,7 @@ else
     error('number of inputs incorrect. Should be [CIJ], or [CIJ, klevel]')
 end
 
-
 %wrank contains the ranked weights of the network, with strongest connections on top
-
 wrank = sort(CIJ(:), 'descend');
 
 %loop over all possible k-levels
@@ -71,5 +69,4 @@ for kk = 1:klevel
     
     %weighted rich-club coefficient
     Rw(kk)=Wr / sum(wrank_r);
-    
 end

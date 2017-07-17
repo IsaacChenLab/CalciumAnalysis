@@ -29,27 +29,33 @@ C = zeros(N);
 Nsur = params.FC.CC.Nsur;
 maxlag = params.FC.CC.maxlag; % 500 ms
 upd = textprogressbar(N);
+
 for i=1:N
     multiWaitbar('Functional connectivity: cross-correlation',i/N);
     upd(i);
 
     for j=1:N
-        if(i~=j && ~isempty(s.Spikes_cell{i}) && ~isempty(s.Spikes_cell{j}))
-
+        if(i~=j)
+            
+            both_cells_active = ~( isempty(s.Spikes_cell{i}) || isempty(s.Spikes_cell{j}) );
+            %raw method
             if strcmpi(params.FC_method,'raw')
-                dF_i = s.dF_cell(i,:);
-                dF_j = s.dF_cell(j,:);
-                r = max(xcorr(dF_i,dF_j,ceil(maxlag*s.fps),'coeff'));
-                if (r < 0)
-                    r = 0;
+                if( strcmp(params.FC_inactive,'include inactive') || both_cells_active)
+                    dF_i = s.dF_cell(i,:);
+                    dF_j = s.dF_cell(j,:);
+                    r = max(xcorr(dF_i,dF_j,ceil(maxlag*s.fps),'coeff'));
+                    if (r < 0)
+                        r = 0;
+                    end
+                    C(i,j) = r;
+                    if(r > thresh)
+                        A(i,j) = 1;
+                        q = q+1;                     
+                    end
                 end
-                C(i,j) = r;
-                if(r > thresh)
-                    A(i,j) = 1;
-                    q = q+1;                     
-                end
-
-            else
+            
+            %fluoro default method
+            elseif (both_cells_active)
                 Csur = zeros(Nsur,1);
                 Fi = Surrogate_Fluorescence(s.Spikes_cell{i},T,s.fps);
                 Fj = Surrogate_Fluorescence(s.Spikes_cell{j},T,s.fps);
@@ -76,6 +82,6 @@ for i=1:N
     end
 end
 
-fprintf("number of connections %d\n", q);
+fprintf("Number of functional connections %d\n", q);
 
 end

@@ -3,8 +3,6 @@ warning off
 % Run this function after AnalyzeData.m to process the raw data - namely
 % to detect spikes.
 
-fprintf("\npostproc_test is called\n");
-
 filenumber = 1;
 if(filenumber>0)
     SOURCE_PATH = [];
@@ -48,7 +46,7 @@ for i = 1:length(FNames) % folders
     load (AnalysisPath);
     files = {analysis.filename};
     
-    disp('Stiching files together');
+    %disp('Stiching files together');
     % To stich the files, first find out the unique filename, ie those not
     % containing -file002.tif, etc
     unique_idx = find(cellfun(@(x) isempty(x),strfind(files,'file')))';

@@ -57,6 +57,8 @@ function [C_pos,C_neg,Ctot_pos,Ctot_neg] = clustering_coef_wu_sign(W,coef_type)
 %   May 2016: Bugfix in computation of the denominator of the Costantini &
 %             Perugini (flag 3) version (Chiara Pintossi)
 
+fprintf("in the BCT function");
+
 if ~exist('coef_type','var')
     coef_type = 1;
 end
@@ -67,6 +69,9 @@ W(1:n+1:end) = 0;
 switch coef_type
     case 1
         W_pos                = W.*(W>0);
+        
+        size(W_pos)
+        
         K_pos                = sum(W_pos~=0,2);
         cyc3_pos             = diag((W_pos.^(1/3))^3);
         K_pos(cyc3_pos == 0) = inf;             %if no 3-cycles exist, make C=0 (via K=inf)

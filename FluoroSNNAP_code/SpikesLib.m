@@ -9,6 +9,9 @@ catch
 end
 thr = params.event_thresh;
 fps = params.fps;
+
+%fprintf("threshold %d, fps %d", thr, fps);
+
 if nargin > 2
     for i = 1:2:length(varargin)-1
         if isnumeric(varargin{i+1})

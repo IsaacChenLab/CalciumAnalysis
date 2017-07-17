@@ -8,10 +8,10 @@ function   [Rw] = rich_club_wu(CIJ,varargin)
 %   maximum edge weights that such nodes might share.
 %
 %   Inputs:
-%       CIJ:        weighted directed connection matrix
+%       CIJ:        weighted undirected connection matrix
 %
 %       k-level:    (optional) max level of RC(k).
-%                   (by default k-level quals the maximal degree of CIJ)
+%                   (by default k-level equals the maximal degree of CIJ)
 %
 %   Output:
 %       Rw:         rich-club curve

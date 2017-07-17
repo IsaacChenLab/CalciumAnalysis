@@ -245,7 +245,7 @@ for i = 1:length(FNames) % folders
     % Save CaData in same folder as the images
     if(SAVE_RESULTS)
         savefile = [TARGET_PATH Folder slash 'analysis.mat'];
-        disp(['Saving results to ' savefile]);
+        disp(['\nSaving results to ' savefile]);
         analysis = CaData(1:numel(files));
         save(savefile, 'analysis');
     end

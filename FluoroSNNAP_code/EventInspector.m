@@ -272,7 +272,8 @@ end
 if(state)
     % Overlay spikes
     hold(handles.axes2,'on');
-    spk = handles.data.Spikes_cell{handles.curr_ROI};
+    %spk = handles.data.Spikes_cell{handles.curr_ROI};
+    spk = floor(handles.data.Spikes_cell{handles.curr_ROI});
     ymn = ylim(handles.axes2);
     for i=1:length(spk)
         line([handles.t(spk(i)),handles.t(spk(i))],ymn,'Color','b','Parent',handles.axes2);

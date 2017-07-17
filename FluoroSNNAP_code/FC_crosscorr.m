@@ -13,6 +13,10 @@ function [A,C] = FC_crosscorr(s)
 % a functional connection between i and j exists
 %
 %%
+
+fprintf("original called\n");
+q = 0;
+
 load('params.mat');
 [N,T] = size(s.dF_cell);
 A = zeros(N);
@@ -54,6 +58,9 @@ for i=1:N
                 Fj = Surrogate_Fluorescence(s.Spikes_cell{j},T,s.fps);
                 r = xcorr(Fi,Fj,ceil(maxlag*s.fps),'coeff');
                 C(i,j) = max(r);
+                
+                q = q + 1;
+                
                 for k=1:Nsur
                     Nspks = length(s.Spikes_cell{j});
                     sur_spks = sort(randsample(T,Nspks));
@@ -70,3 +77,5 @@ for i=1:N
     end
     
 end
+
+fprintf("number of connections %d\n", q);

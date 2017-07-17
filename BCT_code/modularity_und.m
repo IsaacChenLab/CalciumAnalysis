@@ -53,16 +53,33 @@ function [Ci,Q]=modularity_und(A,gamma)
 %   Dec 2015: Single moves during fine-tuning enforced (Xindi Wang)
 %   Jan 2017: Removed node permutation and updated documentation (Roan LaPlante)
 
+%fprintf("In modularity_und\n");
+
 if ~exist('gamma','var')
     gamma = 1;
 end
+
+
 
 N=length(A);                            %number of vertices
 % n_perm = randperm(N);                   %DB: randomly permute order of nodes
 % A = A(n_perm,n_perm);                   %DB: use permuted matrix for subsequent analysis
 K=sum(A);                               %degree
+
 m=sum(K);                               %number of edges (each undirected edge is counted twice)
+
+%fprintf("m is %d\n", m);
+
 B=A-gamma*(K.'*K)/m;                    %modularity matrix
+
+
+
+%check1 = isnan(B);
+%if(check1)
+%    fprintf("confirmed nan\n");
+%end
+
+
 Ci=ones(N,1);                           %community indices
 cn=1;                                   %number of communities
 U=[1 0];                                %array of unexamined communites
