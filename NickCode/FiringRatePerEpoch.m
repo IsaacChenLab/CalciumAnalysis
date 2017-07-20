@@ -1,4 +1,4 @@
-output = function FiringRatePerEpoch(startTimes, fileName)
+function output = FiringRatePerEpoch(startTimes, fileName)
 
 %   Must be run in the same directory as a Spikes.mat file
 
