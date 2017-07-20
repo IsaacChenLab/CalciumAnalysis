@@ -1,6 +1,15 @@
-function FiringRatePerEpoch(startTimes, fileName)
+output = function FiringRatePerEpoch(startTimes, fileName)
 
 %   Must be run in the same directory as a Spikes.mat file
+
+% INPUT
+%   startTimes = vector of all starting times of the different epochs
+%   fileName = name of the file where output will be saved (no extension)
+
+% OUTPUT
+%   output = c x N matrix where N is the number of startTimes given.
+%   output(c,n) = the firing rate of cell C during the nth epoch in
+%   spikes/s. output also saved to csv file
 
 load('Spikes.mat', 'dvSpikes')
 
@@ -29,6 +38,6 @@ for c = 1:cellCount
 end
 
 csvwrite(strcat(fileName,'.csv'), output);
-%sxlswrite(strcat(fileName,'.xls'), output);
+%xlswrite(strcat(fileName,'.xls'), output);
 
 end
