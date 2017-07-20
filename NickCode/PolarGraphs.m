@@ -15,13 +15,16 @@ function PolarGraphs(scale, dataMatrix)
 
 
 if ~exist('dataMatrix', 'var')
+    
     %get csv file
     fprintf("\tSelect csv file...");
     [data_file, data_path] = uigetfile('*.csv','Select csv file...');
     fprintf("Selected!\n");
+    
     M = csvread(strcat(data_path, data_file));
+    M = M(:,2:end-1);
 else
-    M = dataMatrix;
+    M = dataMatrix(:,2:end-1);
 end
 
 %get save folder
