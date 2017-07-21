@@ -1,4 +1,4 @@
-function [AC_analysis] = ChenAutoCorr(maxLag, binSize, cellsToPlot, localMaxWidth, binMatrix)
+function AC_analysis = ChenAutoCorr(maxLag, binSize, cellsToPlot, localMaxWidth, binMatrix)
 
 % FUNCTION ARGUMENTS 
 %   maxLag = max time(s) to offset the autocorr
@@ -26,14 +26,15 @@ function [AC_analysis] = ChenAutoCorr(maxLag, binSize, cellsToPlot, localMaxWidt
 
 % OUTPUT
 %   AC_analysis = an array of struct, one struct for each cell. Each struct
-%       has two fields: 'Time_Corr' and 'TimeOfMax_Period'.
-%   Time_Corr simply has data that was plotted in autocorelograms. The first
-%       column is x values (ie time offsets in seconds) and the second column is
-%       the correlation coefficient for each time offset.
-%   TimeOfMax_Period: Column 1 has the time offset (positive only) where
+%       has two fields: 'Time_Corr' and 'TimeOfMax_LocalMax_Period'.
+%   Time_Corr simply has data that was plotted in autocorelograms. Column 1
+%       is x values (ie time offsets in seconds) and Column 2 is y values
+%       (ie the correlation coefficient for each time offset).
+%   TimeOfMax_LocalMax_Period: Column 1 has the time offset (positive only) where
 %       each local max was achieved (see 'localMaxWidth' for definition of local
-%       max). Column 2 has the amount time between the corresponding local max
-%       and the next one.
+%       max). Column 2 has the value of the correlation coeff which was
+%       deemed a local max. Column 3 has the amount time between the
+%       corresponding local max and the next one.
 
 
 %if a binMatrix wasn't given as an argument, prompt the user for a file
@@ -83,9 +84,11 @@ for c = cellsToPlot
     
     %find the local maxima
     maxima = [];
+    maximaTimes = [];
     for x = (1+numLags):(length(r_vector)-width)
         if sum(r_vector(x) >= r_vector(x-width:x+width)) == width*2+1
-            maxima = [maxima ; x];
+            maxima = [maxima ; r_vector(x)]; 
+            maximaTimes = [maximaTimes ; auto_x(x)];
         end
     end
     
@@ -93,19 +96,19 @@ for c = cellsToPlot
     numMax = length(maxima);
     periods = zeros(numMax,1);
     for i = 1:numMax-1
-        periods(i) = maxima(i+1)-maxima(i);
+        periods(i) = maximaTimes(i+1) - maximaTimes(i);
     end
     
     %convert everything into column vectors, and convert units
-    maxima = maxima - numLags - 1;
-    maxima = maxima * binSize;
-    periods = periods * binSize;
     r_vector = r_vector';
     auto_x = auto_x';
     
     %add the struct for this neuron to the array of structs
-    s = struct('Time_Corr', [auto_x r_vector], 'TimeOfMax_Period', [maxima periods]);
+    s = struct('Time_Corr', [auto_x r_vector], 'TimeOfMax_LocalMax_Period', [maximaTimes maxima periods]);
     AC_analysis{c} = s;
 end
+
+%save the array of structs
+save( strcat(target_folder,'/','AC_analysis.mat'), 'AC_analysis');
 
 end
