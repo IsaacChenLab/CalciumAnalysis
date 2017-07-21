@@ -10,6 +10,10 @@ fprintf("\tchoose .kwik file...");
 fprintf("Selected!\n");
 filename = strcat(data_path, data_file);
 
+fprintf("\tSelect folder to save figures to...");
+save_path = uigetdir('','Select folder to save figures to');
+fprintf("Selected!\n");
+
 channels = 0:31;
 numChan = length(channels);
 locPath = '/channel_groups/0/channels/';
@@ -25,4 +29,4 @@ for c = 1:numChan
 end
      
 output = [channels' x y];
-save('channelLocations.mat','output');
+save(strcat(save_path,'/', 'channelLocations.mat'),'output');
