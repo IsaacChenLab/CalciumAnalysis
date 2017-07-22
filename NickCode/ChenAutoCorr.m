@@ -45,7 +45,7 @@ if ~exist('binMatrix', 'var')
     load(strcat(data_path, data_file));
 end
 
-binMatrix = output;
+%binMatrix = output
 
 %prompt for file for output to be saved
 fprintf('\nSelect folder where output files should be placed...\n');
