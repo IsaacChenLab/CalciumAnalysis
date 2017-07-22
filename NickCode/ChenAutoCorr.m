@@ -26,7 +26,7 @@ function AC_analysis = ChenAutoCorr(maxLag, binSize, cellsToPlot, localMaxWidth,
 
 % OUTPUT
 %   AC_analysis = an array of struct, one struct for each cell. Each struct
-%       has two fields: 'Time_Corr' and 'TimeOfMax_LocalMax_Period'.
+%       has three fields:
 %   Time_Corr simply has data that was plotted in autocorelograms. Column 1
 %       is x values (ie time offsets in seconds) and Column 2 is y values
 %       (ie the correlation coefficient for each time offset).
@@ -35,28 +35,33 @@ function AC_analysis = ChenAutoCorr(maxLag, binSize, cellsToPlot, localMaxWidth,
 %       max). Column 2 has the value of the correlation coeff which was
 %       deemed a local max. Column 3 has the amount time between the
 %       corresponding local max and the next one.
+%   Confidence_Interva: upper and lower boundaries of the 95% confidence
+%       intervals. If the distribution of spikes over time were truly random,
+%       autocorrelation would be within the confidence interval (95% of the
+%       time).
 
 
 %if a binMatrix wasn't given as an argument, prompt the user for a file
 if ~exist('binMatrix', 'var')
-    fprintf('Select file to be analyzed...\n');
+    fprintf('Select file to be analyzed...');
     [data_file, data_path] = uigetfile('*.mat', 'Select .mat file');
     fprintf('Selected!\n');
     load(strcat(data_path, data_file));
 end
 
-%binMatrix = output
+%binMatrix = output; %if there's an error where
 
 %prompt for file for output to be saved
-fprintf('\nSelect folder where output files should be placed...\n');
+fprintf('\nSelect folder where output files should be placed...');
 target_folder = uigetdir('', 'Select output folder');
 fprintf('Selected!\n');
 
 %set some variables
 numBins = size(binMatrix,2);
 numLags = maxLag/binSize;
+numCells = length(cellsToPlot);
 width = floor(localMaxWidth/binSize);
-AC_analysis = cell(length(cellsToPlot),1);
+AC_analysis = cell(numCells,1);
 
 for c = cellsToPlot
     
@@ -119,7 +124,9 @@ for c = cellsToPlot
     auto_x = auto_x';
     
     %add the struct for this neuron to the array of structs
-    s = struct('Time_Corr', [auto_x r_vector], 'TimeOfMax_LocalMax_Period', [maximaTimes maxima periods]);
+    s = struct('Time_Corr', [auto_x r_vector],...
+               'TimeOfMax_LocalMax_Period', [maximaTimes maxima periods],...
+               'Confidence_Intervals', [lowCI; upCI]);
     AC_analysis{c} = s;
 end
 
