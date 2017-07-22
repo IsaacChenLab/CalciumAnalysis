@@ -45,6 +45,8 @@ if ~exist('binMatrix', 'var')
     load(strcat(data_path, data_file));
 end
 
+binMatrix = output;
+
 %prompt for file for output to be saved
 fprintf('\nSelect folder where output files should be placed...\n');
 target_folder = uigetdir('', 'Select output folder');
@@ -77,6 +79,19 @@ for c = cellsToPlot
     plot(ax2, auto_x, r_vector);
     xlabel(ax2, 'Time offset (s)');
     ylabel(ax2, 'Correlation Coeff');
+    
+    %compute confidence intervals
+    vcrit = sqrt(2)*erfinv(0.95);
+    lowCI = -vcrit/sqrt(numBins);
+    upCI = vcrit/sqrt(numBins);
+    
+    %plot confidence intervals as lines on the graph
+    lowCI_line = lowCI * ones(length(auto_x));
+    upCI_line = upCI * ones(length(auto_x));
+    hold on
+    plot(ax2, auto_x, lowCI_line,'r');
+    plot(ax2, auto_x, upCI_line,'r');
+    ylim([lowCI-0.03 1]);
     
     %save each figure
     saveas(f, strcat(target_folder, '/', fName, '.jpg'));
