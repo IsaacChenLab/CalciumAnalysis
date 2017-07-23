@@ -16,10 +16,12 @@ if ~exist('binMatrix', 'var')
     load(strcat(data_path, data_file));
 end
 
+
 %prompt for file for output to be saved
 fprintf('\nSelect folder where output files should be placed...');
 target_folder = uigetdir('', 'Select output folder');
 fprintf('Selected!\n');
+
 
 %create the output folder
 target_folder = strcat(target_folder, '/', outputFolder);
@@ -79,4 +81,4 @@ end
     %save the array of structs
     save( strcat(target_folder,'/','FFT_analysis.mat'), 'FFT_analysis');
 
-end
+end    
