@@ -1,8 +1,10 @@
-function PolarGraphs(scale, dataMatrix)
+function PolarGraphs(scale, cellsToPlot, dataMatrix)
 
 % INPUT
 %   scale = the maximum of the r axis for the graphs (if the data exceeds r
 %       for a given graph then the axis for that graph only will be extended)
+%   cellsToPlot = a vector containing the cell number of each cell to be
+%        plotted
 %   dataMatrix =  n x 9 matrix where n is the number of cells. The 9
 %      columns are as follows: -180, -135, -90, -45, 0, 45, 90, 135, 180. Each
 %      entry is the firing rate in spikes/s. dataMatrix does not need to be
@@ -32,14 +34,13 @@ fprintf("\tSelect folder to save figures to...");
 save_path = uigetdir('','Select folder to save figures to');
 fprintf("Selected!\n");
 
-cells = size(M,1);
 rads = deg2rad([-180,-135,-90,-45,0,45,90,135,180]);
 
-for c = 1:cells
+for c = cellsToPlot
     %set up the figure
     name = sprintf('Cell_%.0f', c);
     f = figure('Name', name, 'NumberTitle','off');
-    title(name);
+    title(['Firing Rate vs Grating Orientation for Cell ' num2str(cell)];
     
     %set the r scale by creating white circle at that r
     polarplot(rads, scale*ones(size(rads)), '--w');  
