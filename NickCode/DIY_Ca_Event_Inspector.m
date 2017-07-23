@@ -26,7 +26,6 @@ for k = 1:length(ROI)
     spike_times = spike_times ./ fps;
 
     %create the figure and axes
-    
     name = ['ROI ' num2str(ROI(k))];
     f = figure('Name', name, 'NumberTitle','off');
     ax1 = axes('Position',[0.1 0.6 0.8 0.3]);
