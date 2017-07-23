@@ -1,4 +1,5 @@
-function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize, cellsToPlot, maxLag, localMaxWidth, binMatrix)
+function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize,...
+                                       cellsToPlot, maxLag, localMaxWidth, binMatrix)
 
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in quotes) of output folder which will be created,
@@ -33,7 +34,7 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 
 % OUTPUT
 %   AC_FFT_Analysis = an array of struct, one struct for each cell. Each struct
-%       has three fields:
+%       has five fields:
 %   AC_Time_Corr simply has data that was plotted in autocorelograms. Column 1
 %       is x values (ie time offsets in seconds) and Column 2 is y values
 %       (ie the correlation coefficient for each time offset).
@@ -42,10 +43,16 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 %       max). Column 2 has the value of the correlation coeff which was
 %       deemed a local max. Column 3 has the amount time between the
 %       corresponding local max and the next one.
-%   AC_Confidence_Interval: upper and lower boundaries of the 95% confidence
+%   AC_ConfidenceInterval: upper and lower boundaries of the 95% confidence
 %       intervals. If the distribution of spikes over time were truly random,
 %       autocorrelation would be within the confidence interval (95% of the
 %       time).
+%   FFT_Freq_Amps simply has data that was plotted in FFT. Column 1
+%       is x values (ie the frequencies) and Column 2 is y values
+%       (ie the amplitude associated with each frequency).
+%   FFT_MaxFreqs_MaxAmps: Column 1 has the 10 frequencies with greatest
+%       amplitudes. Column 2 has the corresponding amplitudes.
+
 
 
 %error if time input is invalid
@@ -102,6 +109,7 @@ for c = cellsToPlot
     
     data = binMatrix(c, startBin:endBin);
     
+% FIRING RATE
     %plot firing rate
     FR_name = strcat('Activity_Cell_',num2str(c));
     FR_plot = figure('Name', FR_name, 'NumberTitle', 'off');
@@ -150,7 +158,7 @@ for c = cellsToPlot
     end
     
     
-%FFT
+%FOURIER TRANSFORM
     %compute and normalize the single spectrum FFT
     F = fft(data);
     F = abs(F) / numBins;
