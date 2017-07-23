@@ -106,8 +106,8 @@ for c = cellsToPlot
     FR_name = strcat('Activity_Cell_',num2str(c));
     FR_plot = figure('Name', FR_name, 'NumberTitle', 'off');
     ax1 = axes;
-    plot(ax1, (1:numBins)*binSize, data)
-    title(ax1, strcat('Firing Rate vs Time of Cell ', num2str(c)));
+    plot(ax1, (startBin:endBin)*binSize, data)
+    title(ax1, ['Firing Rate vs Time of Cell ', num2str(c)]);
     xlabel(ax1, 'Time (s)');
     ylabel(ax1, 'Firing Rate (spikes/s)');
     
@@ -121,7 +121,7 @@ for c = cellsToPlot
     AC_plot = figure('Name', AC_name, 'NumberTitle', 'off');
     ax2 = axes;
     plot(ax2, auto_x, r_vector);
-    title(ax2, strcat('Autocorrelogram for Cell ', num2str(c)));
+    title(ax2, ['Autocorrelogram for Cell ', num2str(c)]);
     xlabel(ax2, 'Time offset (s)');
     ylabel(ax2, 'Correlation Coeff');
     
@@ -161,10 +161,10 @@ for c = cellsToPlot
     freqs = (0:numBins/2) / time;
     
     %plot the FFT
-    FFT_name = strcat('FFT_Cell',num2str(c));
+    FFT_name = strcat('FFT_Cell_',num2str(c));
     FFT_plot = figure('Name', FFT_name, 'NumberTitle', 'off');
-    plot(freqs, F);
-    ax3 = axis;
+    ax3 = axes;
+    plot(ax3, freqs, F);
     title(ax3, ['Fourier Transform of Firing Rate vs Time for Cell ' num2str(c)]);
     xlabel(ax3, 'Frequency (Hz)');
     ylabel(ax3, 'Amplitude');
@@ -184,7 +184,7 @@ for c = cellsToPlot
     %add the struct for this neuron to the array of structs
     s = struct('AC_Time_Corr', [auto_x' r_vector'],...
                'AC_TimeOfMax_LocalMax_Period', [maximaTimes maxima periods],...
-               'AC_Confidence_Intervals', [lowCI; upCI],...
+               'AC_ConfidenceIntervals', [lowCI; upCI],...
                'FFT_Freqs_Amps', [freqs' F'],...
                'FFT_MaxFreqs_MaxAmps', [maxFreqs' maxAmps']);
     AC_FFT_analysis{c} = s;
