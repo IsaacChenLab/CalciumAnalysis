@@ -3,7 +3,9 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in quotes) of output folder which will be created,
-%       and into which all of the output will be saved
+%       and into which all of the output will be saved. If outputFolder =
+%       'dont save' then no jpgs or .mat files will be saved and the script
+%       will run much faster
 %   startTime, endTime = define the period time (in seconds) over which to 
 %       analyze. If endTime exceeds the final time point in the data file,
 %       it is truncated appropriately
@@ -69,14 +71,14 @@ if ~exist('binMatrix', 'var')
     load(strcat(data_path, data_file));
 end
 
-%prompt for file for output to be saved
-fprintf('\nSelect folder where output files should be placed...');
-target_folder = uigetdir('', 'Select output folder');
-fprintf('Selected!\n');
-
-%create the output folder
-target_folder = strcat(target_folder, '/', outputFolder);
-mkdir(target_folder);
+%prompt for file for output to be saved and create folder
+if ~strcmpi(outputFolder, 'dont save')
+    fprintf('\nSelect folder where output files should be placed...');
+    target_folder = uigetdir('', 'Select output folder');
+    fprintf('Selected!\n');
+    target_folder = strcat(target_folder, '/', outputFolder);
+    mkdir(target_folder);
+end
 
 %shorten endTime if its too long
 startBin = floor(startTime/binSize) + 1;
@@ -185,9 +187,11 @@ for c = cellsToPlot
     
 % OUTPUT
     %save each figure
-    saveas(FR_plot, strcat(target_folder, '/', FR_name, '.jpg'));
-    saveas(AC_plot, strcat(target_folder, '/', AC_name, '.jpg'));
-    saveas(FFT_plot, strcat(target_folder, '/', FFT_name, '.jpg'));  
+    if ~strcmpi(outputFolder, 'dont save')
+        saveas(FR_plot, strcat(target_folder, '/', FR_name, '.jpg'));
+        saveas(AC_plot, strcat(target_folder, '/', AC_name, '.jpg'));
+        saveas(FFT_plot, strcat(target_folder, '/', FFT_name, '.jpg')); 
+    end
     
     %add the struct for this neuron to the array of structs
     s = struct('AC_Time_Corr', [auto_x' r_vector'],...
@@ -195,11 +199,12 @@ for c = cellsToPlot
                'AC_ConfidenceIntervals', [lowCI; upCI],...
                'FFT_Freqs_Amps', [freqs' F'],...
                'FFT_MaxFreqs_MaxAmps', [maxFreqs' maxAmps']);
-    AC_FFT_analysis{c} = s;
-         
+    AC_FFT_analysis{c} = s;        
 end
 
 %save the output analysis
-save( strcat(target_folder,'/','AC_FFT_analysis.mat'), 'AC_FFT_analysis');
+if ~strcmpi(outputFolder, 'dont save')
+    save( strcat(target_folder,'/','AC_FFT_analysis.mat'), 'AC_FFT_analysis');
+end
 
 end
