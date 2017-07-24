@@ -2,10 +2,12 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
                                        cellsToPlot, maxLag, localMaxWidth, binMatrix)
 
 % FUNCTION ARGUMENTS
-%   outputFolder = name (in quotes) of output folder which will be created,
-%       and into which all of the output will be saved. If outputFolder =
-%       'dont save' then no jpgs or .mat files will be saved and the script
-%       will run much faster
+%   outputFolder = name (in SINGLE quotes) of output folder which will be 
+%       created, and into which all of the output will be saved. If outputFolder 
+%        = 'dont save' then no jpgs or .mat files will be saved and the script
+%       will run much faster. If outputFolder is a complete path, then  '@'
+%       should be added to the beginning so that user won't be prompted to
+%       choose output directory later
 %   startTime, endTime = define the period time (in seconds) over which to 
 %       analyze. If endTime exceeds the final time point in the data file,
 %       it is truncated appropriately
@@ -56,6 +58,7 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 %       amplitudes. Column 2 has the corresponding amplitudes.
 
 
+%PROCESSING INPUT
 
 %error if time input is invalid
 if startTime < 0 || startTime > endTime
@@ -69,16 +72,31 @@ if ~exist('binMatrix', 'var')
     [data_file, data_path] = uigetfile('*.mat', 'Select .mat file');
     fprintf('Selected!\n');
     load(strcat(data_path, data_file));
+else
+    load(binMatrix);
 end
 
-%prompt for file for output to be saved and create folder
-if ~strcmpi(outputFolder, 'dont save')
-    fprintf('\nSelect folder where output files should be placed...');
+%prompt for file where output should be saved and create folder
+if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')
+    fprintf('Select folder where output files should be placed...');
     target_folder = uigetdir('', 'Select output folder');
     fprintf('Selected!\n');
     target_folder = strcat(target_folder, '/', outputFolder);
-    mkdir(target_folder);
 end
+
+%if complete path was given as outputFolder argument, set target_folder to
+%output folder
+if outputFolder(1) == '@'
+    target_folder = outputFolder(2:end);
+end
+
+%create output folder
+if ~strcmpi(outputFolder, 'dont save')
+   mkdir(target_folder);
+end
+
+
+%SETTING SOME VARIABLES
 
 %shorten endTime if its too long
 startBin = floor(startTime/binSize) + 1;
