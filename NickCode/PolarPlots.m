@@ -1,11 +1,22 @@
-function PolarPlots(outputFolder, cellsToPlot, scale, dataMatrix)
+function PolarPlots(outputFolder, cellsToPlot, screenOff, scale, dataMatrix)
 
 % INPUT
+%   outputFolder = name (in SINGLE quotes) of output folder which will be 
+%       created, and into which all of the output will be saved. If outputFolder 
+%        = 'dont save' then no jpgs or .mat files will be saved and the script
+%       will run much faster. If outputFolder is a complete path, then  '@'
+%       should be added to the beginning so that user won't be prompted to
+%       choose output directory later.
 %   scale = the limit of the r axis for the plots (if the data exceeds r
 %       for a given plot then the axis for that plot only will be extended)
 %   cellsToPlot = a vector containing the cell number of each cell to be
 %        plotted
-%   dataMatrix =  optional; n x 9 matrix where n is the number of cells.
+%   screenOff = set to 'screenOff' if the columns for 'screenOff' are
+%       included in the dataMatrix (ie the dataMatrix is N x 11 instead of N x
+%       9, where N is the number of cells). The screenOff columns need to
+%       be the first and last columns (these will be trimmed away). If
+%       those columns are not present set screenOff to ''.
+%   dataMatrix =  optional; n x 9 (or n x 11) matrix where n is # of cells.
 %       The 9 columns are as follows: -180, -135, -90, -45, 0, 45, 90, 135,
 %       180. Each entry is the firing rate in spikes/s. If dataMatrix is
 %       left out then user will be prompted for a csv file containing the
@@ -24,6 +35,10 @@ if ~exist('dataMatrix', 'var')
     M = csvread(strcat(data_path, data_file)); 
 else
     M = dataMatrix;
+end
+
+if strcmp(screenOff, 'screenOff')
+    M = M(2:end-1,:);
 end
 
 %prompt for file where output should be saved and create folder
@@ -60,8 +75,6 @@ for c = cellsToPlot
 
     %plot and format
     hold on
-    length(rads)
-    length( M(c,:))
     polarplot(rads, M(c,:));
     thetaticks(0:45:360);
     rticks([0 5 10 15 20 25]);
