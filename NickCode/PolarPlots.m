@@ -1,5 +1,5 @@
-function resultantVectors = PolarPlots(outputFolder, cellsToPlot, show,...
-                                        screenOff, scale, dataMatrix)
+function resultantVectors = PolarPlots(outputFolder, cellsToPlot, ...
+                                       show, screenOff, scale, dataMatrix)
 
 % INPUT
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -93,7 +93,8 @@ paxV = polaraxes;
 hold(paxV, 'on')
 thetaticks(0:15:360);
 rticks(0:.2:1);
-paxV.RLim = [0 1];
+rlim(paxV,'manual');
+rlim(paxV,[0 1]);
 
 resultantVectors = zeros(length(cellsToPlot), 3);
 
@@ -107,7 +108,8 @@ for c = cellsToPlot
     pax1 = polaraxes;
     thetaticks(0:15:360);
     rticks(0:2:26);
-    pax1.RLim = [0 scale];
+    rlim(pax1,'manual');
+    rlim(pax1,[0 scale]);
     
     %set the r scale by creating white circle, and do the main plot
     polarplot(pax1, rads, M(c,:));
@@ -130,6 +132,7 @@ for c = cellsToPlot
 end
 
 resultantVectors = sortrows(resultantVectors, 3, 'descend');
+
 
 %save the file
 if ~strcmpi(outputFolder, 'dont save')
