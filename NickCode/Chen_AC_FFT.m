@@ -223,7 +223,7 @@ end
 
 %save the output analysis
 if ~strcmpi(outputFolder, 'dont save')
-    save( strcat(target_folder,'/','AC_FFT_analysis.mat'), 'AC_FFT_analysis');
+    save( strcat(target_folder,'/AC_FFT_analysis.mat'), 'AC_FFT_analysis');
 end
 
 end
