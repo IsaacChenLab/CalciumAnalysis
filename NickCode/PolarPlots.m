@@ -42,6 +42,8 @@ function resultantVectors = PolarPlots(outputFolder, cellsToPlot, show,...
 %handle some input
 if exist('show', 'var') && strcmp(show, 'dont show')
    set(0,'DefaultFigureVisible','off');
+else
+    set(0,'DefaultFigureVisible','on');
 end
 if ~exist('scale', 'var')
     scale = 20;
@@ -54,7 +56,7 @@ if ~exist('dataMatrix', 'var')
     fprintf("Selected!\n");
     M = csvread(strcat(data_path, data_file)); 
 else
-    M = dataMatrix;
+    M = csvread(dataMatrix);
 end
 
 %if the 'screenOff' columns are still in there
@@ -64,7 +66,7 @@ end
 
 %prompt for file where output should be saved and create folder
 if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')
-    fprintf('Select folder where output files should be placed...');
+    fprintf('\tSelect folder where output files should be placed...');
     target_folder = uigetdir('', 'Select output folder');
     fprintf('Selected!\n');
     target_folder = strcat(target_folder, '/', outputFolder);
@@ -85,12 +87,13 @@ rads = deg2rad([-180,-135,-90,-45,0,45,90,135,180]);
 
 %set up resultant vector figure
 v = figure('Name', 'Orientation Selectivity', 'NumberTitle','off');
-title('Normalized Orientation Selectivity for Each Cell');
+title(sprintf("Normalized Orientation Selectivity for Each Cell\n"));
+
 paxV = polaraxes;
 hold(paxV, 'on')
-polarplot(paxV, rads, ones(size(rads)), '--w'); 
 thetaticks(0:15:360);
-rticks(0:.1:1);
+rticks(0:.2:1);
+paxV.RLim = [0 1];
 
 resultantVectors = zeros(length(cellsToPlot), 3);
 
@@ -99,14 +102,14 @@ for c = cellsToPlot
     %set up firing activity the figure
     name = sprintf('Cell_%.0f', c);
     f = figure('Name', name, 'NumberTitle','off');
-    title(['Firing Rate vs Grating Orientation for Cell ' num2str(c)]);
+    title(sprintf(strcat("Firing Rate vs Grating Orientation for Cell ", num2str(c), "\n")));
+    
     pax1 = polaraxes;
     thetaticks(0:15:360);
     rticks(0:2:26);
+    pax1.RLim = [0 scale];
     
     %set the r scale by creating white circle, and do the main plot
-    hold(pax1, 'on')
-    polarplot(pax1, rads, scale*ones(size(rads)), '--w');  
     polarplot(pax1, rads, M(c,:));
     
     %save the file
