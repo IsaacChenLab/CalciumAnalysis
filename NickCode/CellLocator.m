@@ -48,13 +48,20 @@ end
 %make sure that channelLocations.mat is in the same directory as this
 load('channelLocations.mat');
 
-%get and read the csv
+%get and read the Orientation Selectivity file
 if ~exist('selectivity', 'var')  
     fprintf("\tSelect orientation selectivity file...");
     [data_file, data_path] = uigetfile('*.mat','Select .mat file...');
     fprintf("Selected!\n");
     selectivity = strcat(data_path, data_file); 
 end
+
+%get and load the spikes.mat file
+fprintf("\tSelect orientation selectivity file...");
+[data_file, data_path] = uigetfile('*.mat','Select .mat file...');
+fprintf("Selected!\n");
+load(strcat(data_path, data_file));
+
 
 %prompt for file where output should be saved and create folder
 if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')
@@ -75,19 +82,21 @@ if ~strcmpi(outputFolder, 'dont save')
    mkdir(target_folder);
 end
 
-
 load(selectivity);
-maxChannels = [9,11,6,24,9,30,24,18,6,27,13,26,27,12,17,5,6,31,11,4,5,18,20,22,20,27,11,25,13,17,15,10,9,28,8];
 
+%maxChannels = [9,11,6,24,9,30,24,18,6,27,13,26,27,12,17,5,6,31,11,4,5,18,20,22,20,27,11,25,13,17,15,10,9,28,8];
+
+%set maxChannels and count repeats
+maxChannels = zeros(cellCount, 1);
 repeats = zeros(cellCount, 1);
 for i = 1:cellCount
+    maxChannels(r) = dvSpikes.units(r).maxChannels;
     for j = 1:i-1
         if maxChannels(j) == maxChannels(i)
             repeats(i) = repeats(i) + 1;
         end
     end
 end
-
 
 redCells = resultantVectors(resultantVectors(:,3) > threshold, 1);
 allCells = 1:cellCount;
@@ -96,14 +105,11 @@ blueCells = setdiff(allCells, redCells);
 red_repeats = repeats(redCells);
 blue_repeats = repeats(blueCells);
 
-%redChannels = dvSpikes.units.maxChannels(redCells) + 1;
-%blueChannels = dvSpikes.units.maxChannels(blueCells) + 1;
+redChannels = maxChannels(redCells);
+blueChannels = maxChannels(blueCells);
 
-redChannels = maxChannels(redCells) + 1;
-blueChannels = maxChannels(blueCells) + 1;
-
-red_xy = channels_xy(redChannels,2:3);
-blue_xy = channels_xy(blueChannels,2:3);
+red_xy = channels_xy(redChannels+1,2:3);
+blue_xy = channels_xy(blueChannels+1,2:3);
 
 % offset cells in the same location
 red_repeats(red_xy(:,1) == 0) = red_repeats(red_xy(:,1) == 0) * -1;
@@ -129,11 +135,8 @@ xlabel(ax1, 'Microns');
 ylabel(ax1, 'Microns');
 legend('show');
 
-redChannels = redChannels' - 1;
-blueChannels = blueChannels' - 1;
-
-Cell_Locations = struct('Selective_Cells', [redCells redChannels red_xy],...
-                        'NonSelective_Cells', [blueCells' blueChannels blue_xy]);
+Cell_Locations = struct('Selective_Cells', [redCells redChannels' red_xy],...
+                        'NonSelective_Cells', [blueCells' blueChannels' blue_xy]);
 
 %save the output analysis
 if ~strcmpi(outputFolder, 'dont save')
