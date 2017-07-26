@@ -3,7 +3,7 @@ function Cell_Locations = CellLocator(outputFolder, cellCount, threshold, show_f
 % INPUT
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
 %       created, and into which all of the output will be saved. If outputFolder 
-%        = 'dont save' then no jpgs or .mat files will be saved and the script
+%        = 'dont save' then no .fig or .mat files will be saved and the script
 %       will run much faster. If outputFolder is a complete path, then  '@'
 %       should be added to the beginning so that user won't be prompted to
 %       choose output directory later.
@@ -137,7 +137,7 @@ Cell_Locations = struct('Selective_Cells', [redCells redChannels red_xy],...
 
 %save the output analysis
 if ~strcmpi(outputFolder, 'dont save')
-    saveas(f, strcat(target_folder, '/Cell_Locations.jpg'));
+    saveas(f, strcat(target_folder, '/Cell_Locations.fig'));
     save(strcat(target_folder,'/Cell_Locations.mat'), 'Cell_Locations');
 end
 

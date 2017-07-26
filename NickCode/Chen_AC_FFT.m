@@ -4,7 +4,7 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
 %       created, and into which all of the output will be saved. If outputFolder 
-%        = 'dont save' then no jpgs or .mat files will be saved and the script
+%        = 'dont save' then no .fig or .mat files will be saved and the script
 %       will run much faster. If outputFolder is a complete path, then  '@'
 %       should be added to the beginning so that user won't be prompted to
 %       choose output directory later
@@ -207,9 +207,9 @@ for c = cellsToPlot
 % OUTPUT
     %save each figure
     if ~strcmpi(outputFolder, 'dont save')
-        saveas(FR_plot, strcat(target_folder, '/', FR_name, '.jpg'));
-        saveas(AC_plot, strcat(target_folder, '/', AC_name, '.jpg'));
-        saveas(FFT_plot, strcat(target_folder, '/', FFT_name, '.jpg')); 
+        saveas(FR_plot, strcat(target_folder, '/', FR_name, '.fig'));
+        saveas(AC_plot, strcat(target_folder, '/', AC_name, '.fig'));
+        saveas(FFT_plot, strcat(target_folder, '/', FFT_name, '.fig')); 
     end
     
     %add the struct for this neuron to the array of structs

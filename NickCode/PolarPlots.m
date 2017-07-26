@@ -1,5 +1,5 @@
-function resultantVectors = PolarPlots(outputFolder, cellsToPlot, ...
-                                       show, screenOff, scale, dataMatrix)
+function [resultantVectors,z] = PolarPlots(outputFolder, cellsToPlot, ...
+                                       show_figs, screenOff, scale, dataMatrix)
 
 % INPUT
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -10,7 +10,7 @@ function resultantVectors = PolarPlots(outputFolder, cellsToPlot, ...
 %       choose output directory later.
 %   cellsToPlot = a vector containing the cell number of each cell to be
 %        plotted
-%   show = optional; set to 'dont show' if you don't want the figure
+%   show_figs = optional; set to 'dont show' if you don't want the figure
 %       windows to pop up. They'll still be saved unless 'dont save' is
 %       specified.
 %   screenOff = optional; set to 'screenOff' if the columns for 'screenOff' are
@@ -40,7 +40,7 @@ function resultantVectors = PolarPlots(outputFolder, cellsToPlot, ...
 
 
 %handle some input
-if exist('show', 'var') && strcmp(show, 'dont show')
+if exist('show_figs', 'var') && strcmp(show_figs, 'dont show')
    set(0,'DefaultFigureVisible','off');
 else
     set(0,'DefaultFigureVisible','on');
@@ -95,7 +95,7 @@ thetaticks(0:15:360);
 rticks(0:.2:1);
 rlim(paxV,'manual');
 rlim(paxV,[0 1]);
-
+gca
 resultantVectors = zeros(length(cellsToPlot), 3);
 
 for c = cellsToPlot
@@ -106,17 +106,22 @@ for c = cellsToPlot
     title(sprintf(strcat("Firing Rate vs Grating Orientation for Cell ", num2str(c), "\n")));
     
     pax1 = polaraxes;
-    thetaticks(0:15:360);
+    gca
+    %polaraxes(pax1);
+    %thetaticks(pax1,'manual');
+    thetaticks(pax1,0:15:360);
+    %thetaticks(pax1,'manual');
     rticks(0:2:26);
     rlim(pax1,'manual');
     rlim(pax1,[0 scale]);
+    z = gca
     
     %set the r scale by creating white circle, and do the main plot
     polarplot(pax1, rads, M(c,:));
     
     %save the file
     if ~strcmpi(outputFolder, 'dont save')
-        saveas(f,strcat(target_folder, '/', name, '.jpg'));
+        saveas(f,strcat(target_folder, '/', name, '.fig'));
     end
     
     %compute orientation selectivity (ie the resultant vector)
@@ -136,7 +141,7 @@ resultantVectors = sortrows(resultantVectors, 3, 'descend');
 
 %save the file
 if ~strcmpi(outputFolder, 'dont save')
-    saveas(v,strcat(target_folder, '/Orientation_Selectivity.jpg'));
+    saveas(v,strcat(target_folder, '/Orientation_Selectivity.fig'));
     save( strcat(target_folder,'/Orientation_Selectivity.mat'), 'resultantVectors');
 end
 
