@@ -60,8 +60,11 @@ end
 fprintf("\tNo threshold for weighted FC matrix being applied\n");
 fprintf("\tCa event threshold = %.2f\n", params.event_thresh);
 
-% turn off unneccesary FluoroSNNAP analysis modules
-params.analyze.sca = 0;
+% turn FluoroSNNAP analysis modules on and off appropriately
+params.analyze.deltaF = 1;
+params.analyze.detect_events = 1;
+params.analyze.FC = 1;
+params.analyze.sca = 1;
 params.analyze.controllability = 0;
 params.analyze.kinetics = 0;
 params.analyze.spike_probability = 0;
@@ -90,21 +93,20 @@ for i=1:numel(selected_folders)
     end
 end
 
-%loop through files & analyze
+% loop through files & analyze
 disp(['These folders have been selected:' strjoin(selected_folders, '\n')]);
 for i=1:numel(selected_folders)
     
     selected_folder = selected_folders{i};
     disp(['Batch analysis begun on ' selected_folder]);
     
-    %just check .tif existence again in case someone moved the files
+    % just check .tif existence again in case someone moved the files
     if ~any(size(dir([selected_folder slash '*.tif' ]),1))
         msg = 'There is no .tif file in the selected directory.';
         error(msg);
         return;
     end
     
-    % FLUOROSNNAP
     % Run FluoroSNNAP ROI Analysis
     addpath('FluoroSNNAP_code');
     addpath('textprogressbar');
@@ -116,9 +118,7 @@ for i=1:numel(selected_folders)
     
     disp('Running BCT network analysis');
     
-    %BRAIN CONNECTIVITY TOOLBOX
-    % CROSS CORRELATION OUTPUT
-    %Get FC Matrix to Run BCT
+    % Extract FC matrix from FluoroSnnap
     load([selected_folder slash 'processed_analysis.mat']);
     fc_matrix = processed_analysis.FC.CC.C;
     
@@ -130,10 +130,19 @@ for i=1:numel(selected_folders)
     
     % add BCT to MATLAB path
     addpath('BCT_code');
-    % initialize variables
-    % we need this for path & centrality calculations
-    % metrics of interest
+    
+    % initialize output struct
     output = struct();
+    
+    % SYNCHRONIZATOIN
+    % Not a network measure, but a measure of whether groups of neurons in
+    % the organoid all fire together. GSI is between -1 and 1. Where 0 is 
+    % total independence of all neurons, 1 is all neurons only fired
+    % together. Negative numbers are anti-correlation and are unlikely to
+    % be observed. Is computed by FluoroSNNAP instantaneous phase method,
+    % not by BCT. Default is that a cluster must contain at least 3 ROI.
+    output.global_synch_index = processed_analysis.SI;
+    output.number_synch_clusters = processed_analysis.SynchroCluster.Num;
     
     % DENSITY
     % Density = fraction of present connections to possible connections.
