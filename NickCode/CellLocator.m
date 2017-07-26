@@ -45,7 +45,8 @@ if ~exist('threshold', 'var')
    threshold = 0.6;
 end
 
-%make sure that channelLocations.mat is in the same directory as this
+% make sure that channelLocations.mat is in the same directory as this script
+% this is where channels_xy comes from
 load('channelLocations.mat');
 
 %get and read the Orientation Selectivity file
@@ -61,7 +62,6 @@ fprintf("\tSelect orientation selectivity file...");
 [data_file, data_path] = uigetfile('*.mat','Select .mat file...');
 fprintf("Selected!\n");
 load(strcat(data_path, data_file));
-
 
 %prompt for file where output should be saved and create folder
 if ~(strcmpi(outputFolder, 'dont save') || outputFolder(1) == '@')
@@ -90,7 +90,7 @@ load(selectivity);
 maxChannels = zeros(cellCount, 1);
 repeats = zeros(cellCount, 1);
 for i = 1:cellCount
-    maxChannels(r) = dvSpikes.units(r).maxChannels;
+    maxChannels(i) = dvSpikes.units(i).maxChannels;
     for j = 1:i-1
         if maxChannels(j) == maxChannels(i)
             repeats(i) = repeats(i) + 1;
