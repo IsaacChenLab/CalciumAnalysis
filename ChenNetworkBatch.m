@@ -10,6 +10,8 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
 % FC_islands - set to 'remove islands' to remove from network any cell that
 %      has no edges
 
+%set(0,'DefaultFigureVisible','off');
+
 if exist('real_FPS', 'var') == 0
     error('Frames per second is not set.');
     return;
@@ -334,32 +336,55 @@ for i=1:numel(selected_folders)
     dlmwrite([cell_directory slash 'events_by_cell.csv'],data,'-append');
     
     %make events per cell histogram
-    f = figure('Visible', 'off');
+    f = figure();
     histogram(events,max(events));
     xlabel('Events per cell');
     ylabel('Number of cells');
     title('Event Histogram');
-    saveas(f,strcat(cell_directory, slash, 'histogram.jpg'));
+    saveas(f,strcat(cell_directory, slash, 'histogram.fig'));
     
-    %make Ca event raster plot
+    %computation for Ca event and interspike interval raster plot
     spikes = processed_analysis.Spikes_cell;
-    x = zeros(sum(events),1);
-    y = zeros(sum(events),1);
+    num_active_cells = sum(events > 0);
+    
+    raster_x = zeros(sum(events),1);
+    raster_y = zeros(sum(events),1);
+    interspike_x = zeros(sum(events) - num_active_cells, 1);
+    interspike_y = zeros(sum(events) - num_active_cells, 1); 
     p = 1;
-    for i = 1:length(spikes)
-        for j = 1:length(spikes{i})
-            x(p) = spikes{i}(j);
-            y(p) = i;
+    interspike_p = 1;
+    
+    for w = 1:length(spikes)
+        for j = 1:length(spikes{w})
+            raster_x(p) = spikes{w}(j);
+            raster_y(p) = w;
             p = p + 1;
+            
+            if j > 1
+                interspike_x(interspike_p) = spikes{w}(j) - spikes{w}(j-1);
+                interspike_y(interspike_p) = w;
+                interspike_p = interspike_p + 1;
+            end   
         end
     end
-    x = x ./real_FPS;
-    f = figure('Visible', 'off');
-    scatter(x,y,15);
+    
+    %plot Ca event raster plot
+    raster_x = raster_x ./real_FPS;
+    f = figure();
+    scatter(raster_x,raster_y,15);
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Ca Event Scatter plot');
-    saveas(f,strcat(cell_directory, slash, 'raster_plot.jpg'));
+    saveas(f,strcat(cell_directory, slash, 'CaEvent_raster.fig'));
+    
+    %make interspike interval raster plot
+    interspike_x = interspike_x ./real_FPS;
+    f = figure();
+    scatter(interspike_x,interspike_y,15);
+    xlabel('Time (s)');
+    ylabel('Cell number');
+    title('Interspike Interval Scatter plot');
+    saveas(f,strcat(cell_directory, slash, 'InterspikeInterval_raster.fig'));    
     
     %make table of all Ca Events
     dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), []);  %clear the file
