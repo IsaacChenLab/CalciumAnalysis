@@ -1,5 +1,6 @@
 function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize,...
-                                       cellsToPlot, maxLag, localMaxWidth, binMatrixFile)
+                                       cellsToPlot, maxLag, localMaxWidth,...
+                                       showPlots, binMatrixFile)
 
 % FUNCTION ARGUMENTS
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -20,6 +21,9 @@ function AC_FFT_analysis = Chen_AC_FFT(outputFolder, startTime, endTime, binSize
 %       value which is larger than all the values 'localMaxWidth' seconds
 %       before 'm' and after 'm'. The units for localMaxWidth are seconds
 %       (recommended 3*binSize).
+%   showPlots = optional; set to 'dont show' if you don't want the figure
+%       windows to pop up. They'll still be saved unless 'dont save' is
+%       specified.
 %   binMatrixFile = optional; if you want to pass in the complete path to
 %       the data file as an argument (like if this function is being called
 %       within another script) then you won't be prompted to select a data
@@ -67,6 +71,13 @@ if startTime < 0 || startTime > endTime
     return;
 end
 
+%dont show the plots if showPlots = 'dont show'
+if exist('showPlots', 'var') && strcmp(showPlots, 'dont show')
+   set(0,'DefaultFigureVisible','off');
+else
+    set(0,'DefaultFigureVisible','on');
+end
+
 %if a binMatrix wasn't given as an argument, prompt the user for a file
 if ~exist('binMatrixFile', 'var')
     fprintf('Select file to be analyzed...');
@@ -111,7 +122,8 @@ end
 time = endTime - startTime;
 numBins = endBin - startBin;
 numCells = length(cellsToPlot);
-AC_FFT_analysis = cell(numCells,1);
+fourHzScores = zeros(numCells,2);
+AC_FFT_analysis = cell(numCells+1,1);
 
 %set some variables for autocorrelation
 numLags = maxLag/binSize;
@@ -126,8 +138,9 @@ lowCI_line = lowCI * ones(length(auto_x));
 upCI_line = upCI * ones(length(auto_x));
 
 
-for c = cellsToPlot
+for cIndex = 1:numCells
     
+    c = cellsToPlot(cIndex);
     data = binMatrix(c, startBin:endBin);
     
 % FIRING RATE
@@ -193,15 +206,20 @@ for c = cellsToPlot
     FFT_name = strcat('FFT_Cell_',num2str(c));
     FFT_plot = figure('Name', FFT_name, 'NumberTitle', 'off');
     ax3 = axes;
-    plot(ax3, freqs, F);
+    plot(ax3, freqs(2:end), F(2:end));  %dont plot DC, screws up the axis
     title(ax3, ['Fourier Transform of Firing Rate vs Time for Cell ' num2str(c)]);
     xlabel(ax3, 'Frequency (Hz)');
     ylabel(ax3, 'Amplitude');
        
-    %find the 10 strongest frequencies and corresponding amplitudes
+    %find the 20 strongest frequencies and corresponding amplitudes
     [ampRankValues, ampRankIndex] = sort(F,'descend');
-    maxAmps = ampRankValues(1:10);
-    maxFreqs = freqs(ampRankIndex(1:10));
+    maxAmps = ampRankValues(1:20);
+    maxFreqs = freqs(ampRankIndex(1:20));
+    
+    %find avg of the three strongest amps between 3.5 and 4.5 Hz
+    rank4Hz = sort( F(351:451), 'descend');
+    fourHzScores(cIndex,2) = mean(rank4Hz(1:3));
+    fourHzScores(cIndex,1) = c;
     
     
 % OUTPUT
@@ -221,6 +239,10 @@ for c = cellsToPlot
     AC_FFT_analysis{c} = s;        
 end
 
+    fourHzScores = sortrows(fourHzScores, 2, 'descend');
+    s = struct('Cell_4HzScore', fourHzScores);
+    AC_FFT_analysis{numCells + 1} = s;
+    
 %save the output analysis
 if ~strcmpi(outputFolder, 'dont save')
     save( strcat(target_folder,'/AC_FFT_analysis.mat'), 'AC_FFT_analysis');
