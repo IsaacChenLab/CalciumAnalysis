@@ -1,0 +1,156 @@
+function status=BHV_train5(ct,dly,RWD,F1,F2,F3,N1,N2,N4)
+%ct conditioning tone
+%dly delay between ct and reward
+%RWD amount of reward
+%F1,F2,F3 tone frequencies
+%N1 minimum ISI
+%N2 maximum ISI
+%N4 tone duration
+
+% function status=BHV_train5(RWD,F1,F2,F3,N1,N2,N4)
+
+%try,
+global LICKS;
+if nargin<7,
+    error('input args');
+end
+NTRIALS=1e3;
+
+close all;
+
+% prepare the sounds
+AOS = analogoutput('winsound');
+addchannel(AOS,1:2);
+Fs=8e3;
+xs=-pi:(pi/160):0;
+taps=(cos(xs)+1)/2;
+xs=0:(pi/160):pi;
+tape=(cos(xs)+1)/2;
+
+tone1=sin(F1*[0:(1/Fs):N4]);
+tone1(1:length(taps))=tone1(1:length(taps)).*taps;
+tone1(length(tone1)-length(tape)+1:end)=tone1(length(tone1)-length(tape)+1:end).*tape;
+tone{1}=[tone1' tone1']; % stereo
+
+tone2=sin(F2*[0:(1/Fs):N4]);
+tone2(1:length(taps))=tone2(1:length(taps)).*taps;
+tone2(length(tone2)-length(tape)+1:end)=tone2(length(tone2)-length(tape)+1:end).*tape;
+tone{2}=[tone2' tone2']; % stereo
+
+tone3=sin(F3*[0:(1/Fs):N4]);
+tone3(1:length(taps))=tone3(1:length(taps)).*taps;
+tone3(length(tone3)-length(tape)+1:end)=tone3(length(tone3)-length(tape)+1:end).*tape;
+tone{3}=[tone3' tone3']; % stereo
+
+rand_tones_inx=floor(4*(rand(NTRIALS,1)));
+test=1;
+% for i=0:20
+%     rand_tones_inx(ceil(rand*50)+i*50)=5;
+% end
+while test
+    rand_tones_inx(1:100)'
+    t=questdlg ('OK ?');
+    if t(1)=='Y'
+        test=0;
+    else
+        rand_tones_inx=floor(4*(rand(NTRIALS,1)));
+        test=1;
+%         for i=0:20
+%             rand_tones_inx(ceil(rand*50)+i*50)=5;
+%         end
+    end
+
+end
+rand_times_inx=N1+floor((N2-N1)*(rand(NTRIALS,1)));
+
+%try,
+    
+% initiate the das1200 card 
+CARD('Initialize');
+% CARD('lever_up');
+
+%CARD('lever_bit',24);
+inx=1;
+ri=max(1,floor(RWD/0.1));
+nct=0.0001;
+nrw=0;
+nc=1;
+prog=0.5;
+lck=0;
+lks=0;
+ttime=clock;
+f=figure;
+while  inx<NTRIALS,
+    disp (sprintf ('Tone=%d \t Performance=%.3f',rand_tones_inx(inx), nrw/nct));
+    if rand_tones_inx(inx)==5
+        CARD('send_dio',20);
+        CARD('reward',0.1);
+    elseif rand_tones_inx(inx)==ct || rand_tones_inx(inx)==0
+        nct=nct+1;
+        nc=nc+1;
+        CARD('send_dio',20+ct);
+        putdata(AOS,tone{ct});
+        start(AOS);
+        pause (0.1)
+        LICKS=0;
+        pause (N4-0.5);
+        l=LICKS;
+        pause (0.6);
+        temp=clock;
+%         if l==0
+            LICKS=0;
+            outme=0;
+            pause (0.3);
+            while etime(clock, temp)<dly && LICKS==0
+                pause(0.3);
+            end
+            l=LICKS;
+            rand_times_inx(inx)=rand_times_inx(inx)-etime(clock,temp);
+            if l>0
+                CARD('send_dio',20);
+                nrw=nrw+1;
+                for jj=1:ri
+                    CARD('reward',0.1);
+                    pause(0.6);
+                end
+            end
+%         end
+        prog(nc)=nrw/nct;
+        lck(nc)=lks/abs(etime(ttime,clock));
+        lks=0;
+        ttime=clock;
+        figure(f)
+        hold off
+        plot (prog)
+        hold on
+        %plot (lck,'r');
+        title (prog(nc));
+    else
+        CARD('send_dio',20+rand_tones_inx(inx));
+        putdata(AOS,tone{rand_tones_inx(inx)});
+        start(AOS);
+    end
+    LICKS=0;
+    pause(rand_times_inx(inx));
+    lks=lks+LICKS;
+    inx=inx+1;
+    LICKS=0;
+    pause(5);
+    while LICKS~=0
+        lks=lks+LICKS;
+        LICKS=0;
+        pause(5);
+    end
+    
+end
+
+% catch,
+%     disp(lasterr);
+% end
+
+CARD('lever_down');
+CARD('destroy');
+close (f);
+
+return;
+
