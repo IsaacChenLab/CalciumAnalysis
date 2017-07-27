@@ -1,5 +1,5 @@
 function [resultantVectors,z] = PolarPlots(outputFolder, cellsToPlot, ...
-                                       show_figs, screenOff, scale, dataMatrix)
+                                       showPlots, screenOff, scale, dataMatrix)
 
 % INPUT
 %   outputFolder = name (in SINGLE quotes) of output folder which will be 
@@ -10,7 +10,7 @@ function [resultantVectors,z] = PolarPlots(outputFolder, cellsToPlot, ...
 %       choose output directory later.
 %   cellsToPlot = a vector containing the cell number of each cell to be
 %        plotted
-%   show_figs = optional; set to 'dont show' if you don't want the figure
+%   showPlots = optional; set to 'dont show' if you don't want the figure
 %       windows to pop up. They'll still be saved unless 'dont save' is
 %       specified.
 %   screenOff = optional; set to 'screenOff' if the columns for 'screenOff' are
@@ -40,7 +40,7 @@ function [resultantVectors,z] = PolarPlots(outputFolder, cellsToPlot, ...
 
 
 %handle some input
-if exist('show_figs', 'var') && strcmp(show_figs, 'dont show')
+if exist('showPlots', 'var') && strcmp(showPlots, 'dont show')
    set(0,'DefaultFigureVisible','off');
 else
     set(0,'DefaultFigureVisible','on');
@@ -93,9 +93,7 @@ paxV = polaraxes;
 hold(paxV, 'on')
 thetaticks(0:15:360);
 rticks(0:.2:1);
-rlim(paxV,'manual');
 rlim(paxV,[0 1]);
-gca
 resultantVectors = zeros(length(cellsToPlot), 3);
 
 for c = cellsToPlot
@@ -106,15 +104,10 @@ for c = cellsToPlot
     title(sprintf(strcat("Firing Rate vs Grating Orientation for Cell ", num2str(c), "\n")));
     
     pax1 = polaraxes;
-    gca
-    %polaraxes(pax1);
-    %thetaticks(pax1,'manual');
     thetaticks(pax1,0:15:360);
-    %thetaticks(pax1,'manual');
     rticks(0:2:26);
     rlim(pax1,'manual');
     rlim(pax1,[0 scale]);
-    z = gca
     
     %set the r scale by creating white circle, and do the main plot
     polarplot(pax1, rads, M(c,:));
