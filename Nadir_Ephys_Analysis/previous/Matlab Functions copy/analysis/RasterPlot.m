@@ -1,0 +1,14 @@
+function RasterPlot(ref, ev, wnd)
+
+figure;
+hold on
+for i=1:length(ref)
+    sr=ref(i)+wnd(1);
+    sp=ref(i)+wnd(2);
+    f=ev(ev>sr);
+    f=f(f<sp);
+    if ~isempty(f)
+        plot(f-ref(i),i,'k.');
+    end
+end
+axis ([wnd(1) wnd(2) 0 length(ref)+1]);

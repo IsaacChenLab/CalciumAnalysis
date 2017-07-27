@@ -1,0 +1,119 @@
+function [sharpTimes]=MC_swFindTimes(time,rawData,rawlimits,events,Hz,f1,swTimes);
+
+if nargin<6
+    f1=figure;
+end
+
+sharpTimes=[];
+SEC_CHUNKS=5e3;
+
+cla; hold on;
+plot(time,rawData,'b');
+for i=1:size(swTimes,1)
+    x3=find(curtime>=swTimes(i,1) & curtime<swTimes(i,2));
+    plot(time(x3),rawData(x3),'g');
+end
+set(gca,'xlim',[time(1) time(end)]);
+set(gca,'ylim',[(rawlimits(3)-9*rawlimits(4)) (rawlimits(3)+9*rawlimits(4))]);
+%plot(time,rawlimits(3)*ones(size(rawData,1),1),'k');
+%plot(time,(rawlimits(3)+2*rawlimits(4))*ones(size(rawData,1),1),'--k');
+%plot(time,(rawlimits(3)-2*rawlimits(4))*ones(size(rawData,1),1),'--k');
+if ~isempty(events)
+    a=find(events); a=MC_runs(a); a=a(1,:);
+    plot(time(a),(rawlimits(3)-8.5*rawlimits(4))*ones(length(a),1),'r^','markersize',6);
+end
+
+d=0;
+figure(f1);
+[x,y]=ginput(2);
+
+if ~isempty(x) & length(x)>1
+    if x(1)<time(1)
+        x(1)=time(1);
+    end
+    if x(2)>time(end)
+        x(2)=time(end);
+    end
+    inx=[find(time>=x(1),1) : find(time<=x(2),1,'last')];
+    curdata=rawData(inx); 
+    curtime=time(inx);
+    f2=figure('Units','normalized','position',[0.1 0.1 0.8 0.4]);
+    hold on;
+    
+    CHUNKS=SEC_CHUNKS * Hz / 1e3;
+    periods=floor(size(curdata,1)/CHUNKS);
+    last=mod(size(curdata,1),CHUNKS);
+
+    for i=1:periods,
+        inx=[1:CHUNKS]+(i-1)*CHUNKS;
+        [st]=MC_swFindTime2(curtime(inx),curdata(inx),f2);   
+        sharpTimes=[sharpTimes; st];
+    end
+    inxf=[periods*CHUNKS+1 : periods*CHUNKS+last];
+    filler=nan(length(inx)-length(inxf),1); 
+    [st]=MC_swFindTime2(curtime(inx)+SEC_CHUNKS,[curdata(inxf); filler],f2);    
+    sharpTimes=[sharpTimes; st];
+    close(f2);
+end
+    
+
+if nargin<5
+    close(f1);
+end
+
+return;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function st=MC_swFindTime2(curtime,curdata,f)
+
+d=0;
+st=[];
+figure(f); hold on;
+
+plot(curtime,curdata,'k'); 
+set(gca,'xlim',[curtime(1) curtime(end)]);
+while (1)
+    [x,y]=ginput(1);
+    if isempty(x)
+        break;
+    end
+    [cur_wave,inx,inxs]=MC_findSharpNeigh(curtime,curdata,x);
+    plot(curtime(inxs),curdata(inxs),'r');
+    plot(curtime(inx),curdata(inx),'ro');
+    if MC_accept
+        d=d+1;
+        st(d)=cur_wave;
+    else
+        plot(curtime(inx),curdata(inx),'o','color',[1 1 1]);
+        plot(curtime(inxs),curdata(inxs),'k');
+    end    
+end
+
+st=sort(st);
+st=st';
+
+return;
+        
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [Time,inx,inxs]=MC_findSharpNeigh(tt,et,x)
+
+R=100; % ms
+
+% search for minimum within R ms
+
+minus_R=x-R;
+if minus_R<tt(1),
+    minus_R=tt(1);
+end
+plus_R=x+R;
+if plus_R>tt(end),
+    plus_R=tt(end);
+end
+inxs=find(tt>=minus_R & tt<plus_R);
+[mn,inx]=min(et(inxs));
+inx=inx+inxs(1)-1;
+
+Time=tt(inx);
+
+return;
+

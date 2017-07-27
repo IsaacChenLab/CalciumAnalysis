@@ -1,0 +1,64 @@
+function [bitTimes,Mat,FileTimes]=MC_evGet(file,Time)
+
+if nargin<2,
+    Time=nan;
+end
+
+file=MC_fileNumber(file);
+
+bitTimes=cell(1,16);
+
+Total_ms=0; EventTimes=[];
+% unite events over files
+for i=1:length(file)
+    fileName=MC_fileName(file(i));
+    [st,xtime,Hz,totalMS]=MC_loadDigital(file(i),Time);
+    [b] =  MC_dec2bin(st,xtime);
+    for i=1:16,
+        bitTimes{i}=[bitTimes{i}; b{i}+Total_ms];
+    end
+    Total_ms=Total_ms+totalMS;
+    FileTimes(i)=Total_ms;
+end
+
+% create final matrix
+Mat=sparse(Total_ms,16);
+for i=1:16
+    Mat(round(bitTimes{i}),i)=1;
+end
+   
+return;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [b] =  MC_dec2bin(decvec,time)
+
+%aa=intersect(find(diff(decvec))+1,find(decvec)); % onsets of different decimal numbers
+L=length(decvec);
+
+binvec=sparse(length(decvec),16);
+
+xt=find(decvec);
+if isempty(xt)
+    b=cell(1,16);
+    return;
+end
+decvec=decvec(xt);
+xtime=time(xt);
+binstr=dec2bin(decvec,16);
+binstr=fliplr(binstr);
+binvec=sparse(binstr-48);
+
+binvec_all=sparse(L,16);
+binvec_all(xt,:)=binvec;
+
+for i=1:16,
+    x=MC_runs(find(binvec_all(:,i)));
+    x=x(1,:);
+    b{i}=xtime(x);
+end
+
+return;
+
+
+
+    
