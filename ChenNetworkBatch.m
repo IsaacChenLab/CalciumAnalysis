@@ -14,7 +14,6 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
 
 if exist('real_FPS', 'var') == 0
     error('Frames per second is not set.');
-    return;
 end
 load('params.mat');
 params.fps = real_FPS;
@@ -91,7 +90,6 @@ for i=1:numel(selected_folders)
     if ~any(size(dir([selected_folder slash '*.tif' ]),1))
         msg = ['There is no .tif file in the selected directory: ' selected_folder];
         error(msg);
-        return;
     end
 end
 
@@ -106,7 +104,6 @@ for i=1:numel(selected_folders)
     if ~any(size(dir([selected_folder slash '*.tif' ]),1))
         msg = 'There is no .tif file in the selected directory.';
         error(msg);
-        return;
     end
     
     % Run FluoroSNNAP ROI Analysis
@@ -189,7 +186,7 @@ for i=1:numel(selected_folders)
     % modularity) which has been proven to be NP-hard. So this algorithm
     % provides a best estimate of the true modularity. Cj is the optimal
     % community structure (ie the actual modules).
-    [Ci, output.modularity] = modularity_und(fc_matrix);
+    [~, output.modularity] = modularity_und(fc_matrix);
     
     % LENGTH MATRIX
     % Must convert the FC matrix into a 'length' matrix.
