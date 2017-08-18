@@ -3,7 +3,7 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
 
 %INPUT
 % real_FPS - video frame rate, must provide this parameter
-% FC_method - set to'raw' to run raw trace method for FC -- otherwise
+% FC_method - set to 'raw' to run raw trace method for FC -- otherwise
 %     FLUROSNNAP default method will be used
 % FC_inactive - set to 'include inactive' to include cells without events in
 %     FC analysis, otherwise those cells will be ignored
@@ -366,13 +366,26 @@ for i=1:numel(selected_folders)
     end
     
     %plot Ca event raster plot
-    raster_x = raster_x ./real_FPS;
+    raster_x = raster_x ./ real_FPS;
     f = figure();
     scatter(raster_x,raster_y,15);
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Ca Event Scatter plot');
     saveas(f,strcat(cell_directory, slash, 'CaEvent_raster.fig'));
+    
+    %Make dF/F raster plot
+    f = figure();
+    time = ([1:processed_analysis.Frames] - 1) / 5;
+    cells = 1:processed_analysis.N;    
+    surf(time,cells,processed_analysis.dF_cell);
+    xlim([0 time(end)]);
+    ylim([1 cells(end)]);   
+    view(2);
+    xlabel('Time (s)');
+    ylabel('Cell number');
+    title('Ca Trace (dF/F) Raster Plot');
+    saveas(f,strcat(cell_directory, slash, 'CaTrace_raster.fig'));
     
     %make interspike interval raster plot
     interspike_x = interspike_x ./real_FPS;
@@ -381,8 +394,8 @@ for i=1:numel(selected_folders)
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Interspike Interval Scatter plot');
-    saveas(f,strcat(cell_directory, slash, 'InterspikeInterval_raster.fig'));    
-    
+    saveas(f,strcat(cell_directory, slash, 'InterspikeInterval_raster.fig'));
+   
     %make table of all Ca Events
     dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), []);  %clear the file
     fid = fopen(strcat(cell_directory, slash, 'all_events.csv'),'w');
