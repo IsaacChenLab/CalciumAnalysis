@@ -10,11 +10,8 @@ if(filenumber>0)
     Fnames = cell(1);
     FNames{1} = selected_folder;
 end
-if(ispc)
-    slash = '\';
-else
-    slash = '/';
-end
+
+
 try
     load('params.mat');
     params.FC.method_idx = 1;
@@ -38,7 +35,7 @@ for i = 1:length(FNames) % folders
         Folder = strrep(Folder,'\','/');
     end
     %     Make sure that analysis.mat is present. If not, need to run AnalyzeData.m
-    AnalysisPath = [SOURCE_PATH Folder slash 'analysis.mat'];
+    AnalysisPath = fullfile(params.outputDir, 'analysis.mat');
     AnalysisPath = strrep(AnalysisPath,'\','/');
     if(~exist(AnalysisPath,'file'))
         error(['analysis.mat does not exist in search path ' AnalysisPath '. Please run AnalyzeData.m first']);
@@ -936,22 +933,22 @@ for i = 1:length(FNames) % folders
             ylim([0 N]); xlim([0 frames/processed_analysis(j).fps]);
             xlabel('Time (s)'); ylabel('Neuron ID (rearranged)');
             % Save this figure in a new folder
-            [pathstr, name] = fileparts(processed_analysis(j).filename);
-            if(~exist([pathstr slash 'Figures'],'dir'))
-                mkdir(pathstr,'Figures');
+            [~, name] = fileparts(processed_analysis(j).filename);
+            if(~exist(fullfile(params.outputDir, 'Figures'),'dir'))
+                mkdir(params.outputDir,'Figures');
             end
             set(netfig,'PaperPositionMode','auto');
-            print(netfig,'-depsc',[pathstr slash 'Figures' slash name '.eps']);
+            print(netfig,'-depsc',fillFile(params.outputDir, 'Figures', [name '.eps']));
             
-            print(netfig,'-dtiff',[pathstr slash 'Figures' slash name '.tif']);
+            print(netfig,'-dtiff',fullfile(params.outputDir, 'Figures', [name '.tif']));
             close(netfig);
             drawnow;
              multiWaitbar('Saving results and making summary figure',1,'Color','g');
             end
         end
         data = processed_analysis(j);
-         [pathstr, name] = fileparts(processed_analysis(j).filename);
-        save([pathstr slash 'analysis-' name '.mat'],'data');
+         [~, name] = fileparts(processed_analysis(j).filename);
+        save(fullfile(params.outputDir, ['analysis-' name '.mat']),'data');
         
        
         
@@ -963,8 +960,8 @@ for i = 1:length(FNames) % folders
     if(~ispc)
         TARGET_PATH = strrep(TARGET_PATH,'\','/');
     end
-    cprintf('*blue','%s\n', ['Saving to ' TARGET_PATH Folder slash 'processed_analysis.mat']);
-    save([TARGET_PATH Folder slash 'processed_analysis.mat'],'processed_analysis');
+    cprintf('*blue','%s\n', ['Saving to ' fullfile(params.outputDir, 'processed_analysis.mat')]);
+    save(fullfile(params.outputDir, 'processed_analysis.mat'),'processed_analysis');
     
 end
 % matlabpool close
