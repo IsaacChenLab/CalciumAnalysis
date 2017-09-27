@@ -1,4 +1,4 @@
-function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
+function ChenNetworkBatch(outputFolder, real_FPS, FC_method, FC_inactive, FC_islands)
 %Computes functional network analysis metrics
 
 %INPUT
@@ -12,11 +12,15 @@ function ChenNetworkBatch(real_FPS, FC_method, FC_inactive, FC_islands)
 
 %set(0,'DefaultFigureVisible','off');
 
-if exist('real_FPS', 'var') == 0
-    error('Frames per second is not set.');
+if ~exist('real_FPS', 'var')
+    real_FPS = 5;
 end
 load('params.mat');
 params.fps = real_FPS;
+real_FPS
+outputFolder
+
+fprintf("check");
 
 %set parameters appropriately
 if exist('FC_method', 'var') ~= 0
@@ -39,7 +43,7 @@ elseif ~strcmpi(FC_islands, 'remove islands')
 end
 
 %feedback on the parameters
-fprintf("\tFrames per second = %.0f\n", real_FPS);
+fprintf("\tFrames per second = %f\n", real_FPS);
 if strcmpi(params.FC_method, 'raw')
     fprintf("\tFC_method = raw trace\n");
     if strcmpi(params.FC_inactive, 'include inactive')
@@ -71,45 +75,44 @@ params.analyze.kinetics = 0;
 params.analyze.spike_probability = 0;
 params.analyze.ensembles = 0;
 params.analyze.figure = 0;
-save('params.mat', '-append');
+save('params.mat', 'params', '-append');
 
-
-% handle slashes
-if(ispc)
-    slash = '\';
-else
-    slash = '/';
-end
 
 % GUI to get folder with .tif file
-selected_folders = uigetfile_n_dir('','Select folders containing tiff stacks');
+selectedFolders = {};
+getAnother = 1;
 
-% make sure all folders have .tif files
-for i=1:numel(selected_folders)
-    selected_folder = selected_folders{i};
-    if ~any(size(dir([selected_folder slash '*.tif' ]),1))
-        msg = ['There is no .tif file in the selected directory: ' selected_folder];
+while(getAnother)
+    temp = uigetdir('', 'Select folder containing tiff stack and Seg file');
+    if isempty(dir(fullfile(temp, '*.tif')))
+        msg = ['There is no .tif file in the selected directory: ' temp];
         error(msg);
     end
+    selectedFolders{end + 1} = temp;
+    getAnother = input('Select another tiff stack? 0 = no, 1 = yes ');
 end
 
+
 % loop through files & analyze
-disp(['These folders have been selected:' strjoin(selected_folders, '\n')]);
-for i=1:numel(selected_folders)
+%disp(['These folders have been selected:' strjoin(selectedFolders, '\n')]);
+for sss = 1:length(selectedFolders)
     
-    selected_folder = selected_folders{i};
+    selected_folder = selectedFolders{sss};
+    
+    outputDir = fullfile(selected_folder, outputFolder);
+    selected_folder
+    outputDir
+    mkdir(outputDir);
+    params.outputDir = outputDir;
+    save('params.mat', 'params', '-append');
+    load('params.mat');
+    
     disp(['Batch analysis begun on ' selected_folder]);
-    
-    % just check .tif existence again in case someone moved the files
-    if ~any(size(dir([selected_folder slash '*.tif' ]),1))
-        msg = 'There is no .tif file in the selected directory.';
-        error(msg);
-    end
     
     % Run FluoroSNNAP ROI Analysis
     addpath('FluoroSNNAP_code');
     addpath('textprogressbar');
-    addpath(['FluoroSNNAP_code' slash 'oopsi-master']);
+    addpath(fullfile('FluoroSNNAP_code', 'oopsi-master'));
     AnalyzeData_2(selected_folder, real_FPS);
     
     % Run FluoroSNNAP Processing
@@ -118,7 +121,8 @@ for i=1:numel(selected_folders)
     disp('Running BCT network analysis');
     
     % Extract FC matrix from FluoroSnnap
-    load([selected_folder slash 'processed_analysis.mat']);
+
+    load(fullfile(outputDir, 'processed_analysis.mat'));
     fc_matrix = processed_analysis.FC.CC.C;
     
     % remove islands if called for
@@ -244,14 +248,15 @@ for i=1:numel(selected_folders)
     
     %SAVE THE OUTPUT;
     %make the directory
-    BCT_directory = strcat(selected_folder, slash, 'BCT');
+
+    BCT_directory = fullfile(outputDir, 'BCT');
     if ~exist(BCT_directory, 'dir')
         mkdir(BCT_directory);
     end
     cprintf('*blue','%s\n', ['Saving BCT to ' BCT_directory]);
     
     %make parameter file
-    fid = fopen(strcat(selected_folder, slash, 'analysis_parameters.txt'),'w');
+    fid = fopen(fullfile(outputDir, 'analysis_parameters.txt'),'w');
     fprintf(fid,'List of paramters\n\n');
     fprintf(fid,"\tFrames per second = %f\n", real_FPS);
     fprintf(fid,"\tFC_method = %s\n", params.FC_method);
@@ -267,13 +272,13 @@ for i=1:numel(selected_folders)
         output.betweenness_distribution);
     header = ['ROI Number,Degree,Strength,Eccentricity,Clustering Coefficient,'...
         'Betweenness Centrality (normalized)'];
-    fid = fopen(strcat(BCT_directory,slash,'per_cell_measures.csv'),'w');
+    fid = fopen(fullfile(BCT_directory,'per_cell_measures.csv'),'w');
     fprintf(fid,'%s\n',header);
     fclose(fid);
-    dlmwrite(strcat(BCT_directory,slash,'per_cell_measures.csv'), output_by_cell, '-append');
+    dlmwrite(fullfile(BCT_directory,'per_cell_measures.csv'), output_by_cell, '-append');
     
     %rich club curve has to be in its own file bc its indexed differently
-    csvwrite(strcat(BCT_directory, slash, 'rich_club_curve.csv'), output.rich_club_curve);
+    csvwrite(fullfile(BCT_directory, 'rich_club_curve.csv'), output.rich_club_curve);
     
     %write the rest of the output struct to 'network_summary.csv'
     output2 = output;
@@ -285,11 +290,11 @@ for i=1:numel(selected_folders)
     output2.eccentricities = 'written to separate file';
     
     temp_table = struct2table(output2);
-    writetable(temp_table,strcat(BCT_directory, slash, 'network_summary.csv'));
-    save(strcat(BCT_directory, slash, 'BCT_output.mat'), 'output');
+    writetable(temp_table,fullfile(BCT_directory, 'network_summary.csv'));
+    save(fullfile(BCT_directory, 'BCT_output.mat'), 'output');
     
     %save events & cell summary stats
-    cell_directory = strcat(selected_folder, slash, 'Events_Cell');
+    cell_directory = fullfile(outputDir, 'Events_Cell');
     if ~exist(cell_directory, 'dir')
         mkdir(cell_directory);
     end
@@ -313,8 +318,8 @@ for i=1:numel(selected_folders)
         'Fraction of Cells That Are Active' numel(events(events > 0))/numel(events);
         };
     
-    dlmwrite([cell_directory slash 'events_cell_summary_stats.csv'],[]);  %clear the file
-    fid = fopen([cell_directory slash 'events_cell_summary_stats.csv'],'wt');
+    dlmwrite(fullfile(cell_directory, 'events_cell_summary_stats.csv'),[]);  %clear the file
+    fid = fopen(fullfile(cell_directory, 'events_cell_summary_stats.csv'),'wt');
     if fid>0
         for k=1:size(single_cell_summary,1)
             fprintf(fid,'%s,%f\n',single_cell_summary{k,:});
@@ -323,14 +328,14 @@ for i=1:numel(selected_folders)
     end
     
     %save cell by cell event data
-    dlmwrite([cell_directory slash 'events_by_cell.csv'],[]); %clear the file
+    dlmwrite(fullfile(cell_directory, 'events_by_cell.csv'),[]); %clear the file
     header = {'ROI Number' 'Total Events' 'Events/Sec'};
     headerJoined = strjoin(header, ',');
-    fid = fopen([cell_directory slash 'events_by_cell.csv'],'w');
+    fid = fopen(fullfile(cell_directory, 'events_by_cell.csv'),'w');
     fprintf(fid,'%s\n',headerJoined);
     fclose(fid);
     data = horzcat((1:length(events))', events, events./(processed_analysis.Frames/real_FPS));
-    dlmwrite([cell_directory slash 'events_by_cell.csv'],data,'-append');
+    dlmwrite(fullfile(cell_directory, 'events_by_cell.csv'),data,'-append');
     
     %make events per cell histogram
     f = figure();
@@ -338,7 +343,7 @@ for i=1:numel(selected_folders)
     xlabel('Events per cell');
     ylabel('Number of cells');
     title('Event Histogram');
-    saveas(f,strcat(cell_directory, slash, 'histogram.fig'));
+    saveas(f,fullfile(cell_directory, 'histogram.fig'));
     
     %computation for Ca event and interspike interval raster plot
     spikes = processed_analysis.Spikes_cell;
@@ -372,7 +377,7 @@ for i=1:numel(selected_folders)
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Ca Event Scatter plot');
-    saveas(f,strcat(cell_directory, slash, 'CaEvent_raster.fig'));
+    saveas(f,fullfile(cell_directory, 'CaEvent_raster.fig'));
     
     %Make dF/F raster plot
     f = figure();
@@ -382,10 +387,11 @@ for i=1:numel(selected_folders)
     xlim([0 time(end)]);
     ylim([1 cells(end)]);   
     view(2);
+    colorbar;
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Ca Trace (dF/F) Raster Plot');
-    saveas(f,strcat(cell_directory, slash, 'CaTrace_raster.fig'));
+    saveas(f,fullfile(cell_directory, 'CaTrace_raster.fig'));
     
     %make interspike interval raster plot
     interspike_x = interspike_x ./real_FPS;
@@ -394,16 +400,16 @@ for i=1:numel(selected_folders)
     xlabel('Time (s)');
     ylabel('Cell number');
     title('Interspike Interval Scatter plot');
-    saveas(f,strcat(cell_directory, slash, 'InterspikeInterval_raster.fig'));
+    saveas(f,fullfile(cell_directory, 'InterspikeInterval_raster.fig'));
    
     %make table of all Ca Events
-    dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), []);  %clear the file
-    fid = fopen(strcat(cell_directory, slash, 'all_events.csv'),'w');
+    dlmwrite(fullfile(cell_directory, 'all_events.csv'), []);  %clear the file
+    fid = fopen(fullfile(cell_directory, 'all_events.csv'),'w');
     fprintf(fid,'ROI, Event timings (s)\n');
     fclose(fid);
     for x = 1:length(spikes)
         labelled_spikes = [x spikes{x}./real_FPS];
-        dlmwrite(strcat(cell_directory, slash, 'all_events.csv'), labelled_spikes, '-append');
+        dlmwrite(fullfile(cell_directory, 'all_events.csv'), labelled_spikes, '-append');
     end
 end
 
