@@ -1,3 +1,4 @@
+
 function Data = AnalyzeData_2(selected_folder, real_FPS)
 
 % Reads list of folders that contain .tif image stacks to compute the
@@ -14,11 +15,7 @@ function Data = AnalyzeData_2(selected_folder, real_FPS)
 % Output is saved as analysis.mat file in the same folder. Run PostProcess
 % function to detect spikes and other analyses.
 filenumber = 1;
-if(ispc)
-    slash = '\';
-else
-    slash = '/';
-end
+
 
 if(filenumber>0)
     SOURCE_PATH = [];
@@ -44,7 +41,7 @@ for i = 1:length(FNames) % folders
     end
     
     if(filenumber<2)
-    files = dir([SOURCE_PATH Folder slash '*.tif']);
+    files = dir(fullfile([SOURCE_PATH Folder], '*.tif'));
     end
     % Remove files that are part of the exlusion list and remove
     % those whose name begins with Segmentation
@@ -75,8 +72,8 @@ for i = 1:length(FNames) % folders
     disp_err=0;
     for j=1:numel(files)
         if(isempty(strfind(files(j).name,'-file')))
-            if(~exist([SOURCE_PATH Folder slash 'Segmentation-' files(j).name(1:end-4) '.mat'],'file'))
-                msg = sprintf('%s\n%s\n',msg,[SOURCE_PATH Folder slash 'Segmentation-' files(j).name]);
+            if(~exist(fullfile([SOURCE_PATH Folder], ['Segmentation-' files(j).name(1:end-4) '.mat']),'file'))
+                msg = sprintf('%s\n%s\n',msg,fullfile([SOURCE_PATH Folder], ['Segmentation-' files(j).name]));
                 disp_err=1;
             end
         end
@@ -94,7 +91,7 @@ for i = 1:length(FNames) % folders
         info = cell(numel(files),1);
         for j=1:numel(files)
             
-            filename = [SOURCE_PATH Folder slash files(j).name];
+            filename = fullfile([SOURCE_PATH Folder], files(j).name);
             try
                 disp(['Reading file info for stack ' filename]);
                 info{j} = imfinfo(filename);
@@ -116,7 +113,7 @@ for i = 1:length(FNames) % folders
             end
             % ** Segmentation file for a stack named "filename.tif" must be
             % ** named "Segmentation-filename.tif"
-            segname = [SOURCE_PATH Folder slash 'Segmentation-' stackname(1:end-4) '.mat'];
+            segname = fullfile([SOURCE_PATH Folder], ['Segmentation-' stackname(1:end-4) '.mat']);
             try
                 disp(['Reading ' segname]);
                 %                 RemoveNeurites(segname);
@@ -142,7 +139,7 @@ for i = 1:length(FNames) % folders
     
     for j=1:numel(files) % filenames
         
-        filename = [SOURCE_PATH Folder slash files(j).name];
+        filename = fullfile([SOURCE_PATH Folder], files(j).name);
         
         ImgInfo = info{j};
         switch ANALYSIS_TYPE
@@ -238,13 +235,13 @@ for i = 1:length(FNames) % folders
                 
         end
         analysis = CaData(j);
-        [x,y,~] = fileparts(filename);
-        save([x '/CaSignal-' y '.mat'],'analysis');
+        [~,y,~] = fileparts(filename);
+        save(fullfile(params.outputDir, ['CaSignal-' y '.mat']),'analysis');
     end
     Data{i} = CaData;
     % Save CaData in same folder as the images
     if(SAVE_RESULTS)
-        savefile = [TARGET_PATH Folder slash 'analysis.mat'];
+        savefile = fullfile(params.outputDir, 'analysis.mat');
         disp(['\nSaving results to ' savefile]);
         analysis = CaData(1:numel(files));
         save(savefile, 'analysis');
