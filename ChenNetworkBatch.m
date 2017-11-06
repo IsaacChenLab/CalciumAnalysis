@@ -17,8 +17,7 @@ if ~exist('real_FPS', 'var')
 end
 load('params.mat');
 params.fps = real_FPS;
-real_FPS
-outputFolder
+
 
 fprintf("check");
 
@@ -88,24 +87,20 @@ while(getAnother)
         msg = ['There is no .tif file in the selected directory: ' temp];
         error(msg);
     end
-    selectedFolders{end + 1} = temp;
+    selectedFolders{end+1} = temp;
     getAnother = input('Select another tiff stack? 0 = no, 1 = yes ');
 end
 
 
 % loop through files & analyze
 %disp(['These folders have been selected:' strjoin(selectedFolders, '\n')]);
-for sss = 1:length(selectedFolders)
+for zz = 1:length(selectedFolders)
     
-    selected_folder = selectedFolders{sss};
-    
+    selected_folder = selectedFolders{zz};
     outputDir = fullfile(selected_folder, outputFolder);
-    selected_folder
-    outputDir
     mkdir(outputDir);
     params.outputDir = outputDir;
     save('params.mat', 'params', '-append');
-    load('params.mat');
     
     disp(['Batch analysis begun on ' selected_folder]);
     
@@ -413,6 +408,6 @@ for sss = 1:length(selectedFolders)
     end
 end
 
-disp(['Completed analysis on:' strjoin(selected_folders, '\n')]);
+disp(['Completed analysis on:' strjoin(selectedFolders, '\n')]);
 
 end
