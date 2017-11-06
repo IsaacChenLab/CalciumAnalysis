@@ -16,8 +16,8 @@ function [A,C] = FC_crosscorr2(s)
 %fprintf('\tUsing original method for FC but with native threshold on \n');
 
 load('params.mat');
-thresh = params.FC_thresh;
-save('params.mat', '-append');
+
+
 
 %fprintf("xcorr threshold = %.2f\n", thresh);
     
@@ -40,6 +40,7 @@ for i=1:N
             both_cells_active = ~( isempty(s.Spikes_cell{i}) || isempty(s.Spikes_cell{j}) );
             %raw method
             if strcmpi(params.FC_method,'raw')
+                thresh = params.FC_thresh;
                 if( strcmp(params.FC_inactive,'include inactive') || both_cells_active)
                     dF_i = s.dF_cell(i,:);
                     dF_j = s.dF_cell(j,:);
