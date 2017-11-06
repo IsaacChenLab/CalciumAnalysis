@@ -940,7 +940,7 @@ for i = 1:length(FNames) % folders
             set(netfig,'PaperPositionMode','auto');
             print(netfig,'-depsc',fillFile(params.outputDir, 'Figures', [name '.eps']));
             
-            print(netfig,'-dtiff',fullfile(params.outputDir, 'Figures', [name '.tif']));
+            print(netfig,'-dtiff',fullfile([params.outputDir, 'Figures', [name '.tif']]));
             close(netfig);
             drawnow;
              multiWaitbar('Saving results and making summary figure',1,'Color','g');
