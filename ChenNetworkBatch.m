@@ -396,6 +396,17 @@ for zz = 1:length(selectedFolders)
     ylabel('Cell number');
     title('Interspike Interval Scatter plot');
     saveas(f,fullfile(cell_directory, 'InterspikeInterval_raster.fig'));
+    
+    %plot unsorted FC matrix
+    f = figure();
+    surf(processed_analysis.FC.CC.C)
+    view(2);
+    colorbar;
+    xlabel('Neurons');
+    ylabel('Neurons');
+    title('Functional Connectivity Matrix');
+    saveas(f,fullfile(cell_directory, 'FC_matrix.fig'));
+
    
     %make table of all Ca Events
     dlmwrite(fullfile(cell_directory, 'all_events.csv'), []);  %clear the file
@@ -406,6 +417,7 @@ for zz = 1:length(selectedFolders)
         labelled_spikes = [x spikes{x}./real_FPS];
         dlmwrite(fullfile(cell_directory, 'all_events.csv'), labelled_spikes, '-append');
     end
+    
 end
 
 disp(['Completed analysis on:' strjoin(selectedFolders, '\n')]);
