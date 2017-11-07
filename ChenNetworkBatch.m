@@ -185,7 +185,9 @@ for zz = 1:length(selectedFolders)
     % modularity) which has been proven to be NP-hard. So this algorithm
     % provides a best estimate of the true modularity. Cj is the optimal
     % community structure (ie the actual modules).
-    [~, output.modularity] = modularity_und(fc_matrix);
+    [Cj, output.modularity] = modularity_und(fc_matrix);
+    
+    Cj
     
     % LENGTH MATRIX
     % Must convert the FC matrix into a 'length' matrix.
@@ -397,9 +399,20 @@ for zz = 1:length(selectedFolders)
     title('Interspike Interval Scatter plot');
     saveas(f,fullfile(cell_directory, 'InterspikeInterval_raster.fig'));
     
-    %plot unsorted FC matrix
+    %sort FC matrix according to modular form
     f = figure();
-    surf(processed_analysis.FC.CC.C)
+    fc = processed_analysis.FC.CC.C;
+    fc = [fc Cj];
+    fc = sortrows(fc, length(fc));
+    fc = fc(:,1:end-1);
+    fc = fc';
+    fc = [fc Cj];
+    fc = sortrows(fc, length(fc));
+    fc = fc(:,1:end-1);
+    fc = fc';
+    
+    %plot sorted fc matrix
+    surf(fc)
     view(2);
     colorbar;
     xlabel('Neurons');
