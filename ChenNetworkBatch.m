@@ -1,7 +1,8 @@
-function ChenNetworkBatch(outputFolder, real_FPS, FC_method, FC_inactive, FC_islands)
+function selectedFolders = ChenNetworkBatch(outputFolder, real_FPS, FC_method, FC_inactive, FC_islands)
 %Computes functional network analysis metrics
 
 %INPUT
+% outputFolder - name of the folder in which all output will be deposited
 % real_FPS - video frame rate, must provide this parameter
 % FC_method - set to 'raw' to run raw trace method for FC -- otherwise
 %     FLUROSNNAP default method will be used
@@ -19,7 +20,12 @@ load('params.mat');
 params.fps = real_FPS;
 
 
-fprintf("check");
+% get the spike library
+fprintf('\nSelect spike library to be used...');
+[spike_file, spike_path] = uigetfile('*.mat', 'Select .mat file');
+fprintf([spike_file ' was selected!\n\n']);
+params.spikeLib = fullfile(spike_path, spike_file);
+
 
 %set parameters appropriately
 if exist('FC_method', 'var') ~= 0
@@ -77,23 +83,53 @@ params.analyze.figure = 0;
 save('params.mat', 'params', '-append');
 
 
-% GUI to get folder with .tif file
 selectedFolders = {};
-getAnother = 1;
 
-while(getAnother)
-    temp = uigetdir('', 'Select folder containing tiff stack and Seg file');
-    if isempty(dir(fullfile(temp, '*.tif')))
-        msg = ['There is no .tif file in the selected directory: ' temp];
-        error(msg);
+
+% GUI big folders full of videos all at once
+getAnotherBig = input('\nDo you want to select a BIG folder containing lots of videos that all need to be analyzed? 0 = no, 1 = yes ');
+
+while(getAnotherBig)
+    bigFolder = uigetdir('', 'Select BIG folder containing small folders with tiff stack (.tif) and Seg file (.mat)');
+    listing = dir(bigFolder);
+    
+    for ff = 3:length(listing)
+        ff = listing(ff);
+        videoFolder = fullfile(ff.folder, ff.name);
+        if ff.isdir && ~isempty(dir(fullfile(videoFolder, '*.tif'))) && ~isempty(dir(fullfile(videoFolder, '*.mat')))
+            selectedFolders{end+1} = videoFolder;
+        end
     end
-    selectedFolders{end+1} = temp;
-    getAnother = input('Select another tiff stack? 0 = no, 1 = yes ');
+       
+    getAnotherBig = input('Select another BIG folder? 0 = no, 1 = yes ');
 end
 
 
+% GUI for adding individual videos
+
+getAnotherSmall = input('\nDo you want to add a small containing a single video? 0 = no, 1 = yes ');
+
+while(getAnotherSmall)
+    smallFolder = uigetdir('', 'Select small folder containing single video, ie tiff stack (.tif) and Seg file (.mat)');
+  
+    if ~isempty(dir(fullfile(smallFolder, '*.tif'))) && ~isempty(dir(fullfile(smallFolder, '*.mat')))
+        selectedFolders{end+1} = smallFolder;
+    end  
+
+    if isempty(dir(fullfile(smallFolder, '*.tif')))
+        disp (['There is no .tif file in the selected directory: ' smallFolder]);
+    end
+    if isempty(dir(fullfile(smallFolder, '*.mat')))
+        disp (['There is no seg file (.mat) in the selected directory: ' smallFolder]);
+    end
+    
+    getAnotherSmall = input('Select another single video? 0 = no, 1 = yes ');
+end
+
+
+
 % loop through files & analyze
-%disp(['These folders have been selected:' strjoin(selectedFolders, '\n')]);
+% disp(['These folders have been selected:' strjoin(selectedFolders, '\n')]);
 for zz = 1:length(selectedFolders)
     
     selected_folder = selectedFolders{zz};
@@ -187,7 +223,6 @@ for zz = 1:length(selectedFolders)
     % community structure (ie the actual modules).
     [Cj, output.modularity] = modularity_und(fc_matrix);
     
-    Cj
     
     % LENGTH MATRIX
     % Must convert the FC matrix into a 'length' matrix.
