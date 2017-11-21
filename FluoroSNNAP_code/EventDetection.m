@@ -10,7 +10,7 @@ catch
 end
 % params.event_type = 1 (template-based), 2 = deconvolution based
 if(params.event_type==1)
-    load('spikes.mat');
+    load(params.spikeLib);
     spks = SpikesLib(dF',spikes);
 else
     x = run_oopsi(dF);
