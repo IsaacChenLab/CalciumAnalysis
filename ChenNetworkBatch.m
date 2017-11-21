@@ -48,27 +48,27 @@ elseif ~strcmpi(FC_islands, 'remove islands')
 end
 
 %feedback on the parameters
-fprintf("\tFrames per second = %f\n", real_FPS);
+fprintf('\tFrames per second = %f\n', real_FPS);
 if strcmpi(params.FC_method, 'raw')
-    fprintf("\tFC_method = raw trace\n");
+    fprintf('\tFC_method = raw trace\n');
     if strcmpi(params.FC_inactive, 'include inactive')
-        fprintf("\tFC_inactive = INCLUDING cells that have zero Ca events in FC analysis\n");
+        fprintf('\tFC_inactive = INCLUDING cells that have zero Ca events in FC analysis\n');
     else
-        fprintf("\tFC_inactive = EXCLUDING cells that have zero Ca events in FC analysis\n");
+        fprintf('\tFC_inactive = EXCLUDING cells that have zero Ca events in FC analysis\n');
     end
 else
-    fprintf("\tFC_method = FluoroSNNAP default\n");
-    fprintf("\tFC_inactive = EXCLUDING cells w/o Ca events (required by the deafault FC method)\n");
+    fprintf('\tFC_method = FluoroSNNAP default\n');
+    fprintf('\tFC_inactive = EXCLUDING cells w/o Ca events (required by the deafault FC method)\n');
 end
 
 if strcmpi(FC_islands, 'remove islands')
-    fprintf("\tFC_islands = REMOVE all islands from the network\n");
+    fprintf('\tFC_islands = REMOVE all islands from the network\n');
 else
-    fprintf("\tFC_islands = KEEP islands in the network\n");
+    fprintf('\tFC_islands = KEEP islands in the network\n');
 end
 
-fprintf("\tNo threshold for weighted FC matrix being applied\n");
-fprintf("\tCa event threshold = %.2f\n", params.event_thresh);
+fprintf('\tNo threshold for weighted FC matrix being applied\n');
+fprintf('\tCa event threshold = %.2f\n', params.event_thresh);
 
 % turn FluoroSNNAP analysis modules on and off appropriately
 params.analyze.deltaF = 1;
@@ -91,11 +91,11 @@ getAnotherBig = input('\nDo you want to select a BIG folder containing lots of v
 
 while(getAnotherBig)
     bigFolder = uigetdir('', 'Select BIG folder containing small folders with tiff stack (.tif) and Seg file (.mat)');
-    listing = dir(bigFolder);
+    listing = dir(bigFolder)
     
     for ff = 3:length(listing)
         ff = listing(ff);
-        videoFolder = fullfile(ff.folder, ff.name);
+        videoFolder = fullfile(bigFolder, ff.name);
         if ff.isdir && ~isempty(dir(fullfile(videoFolder, '*.tif'))) && ~isempty(dir(fullfile(videoFolder, '*.mat')))
             selectedFolders{end+1} = videoFolder;
         end
@@ -269,7 +269,7 @@ for zz = 1:length(selectedFolders)
     
     % BETWEENNESS CENTRALITY
     % Fraction of paths in network that contain each node.
-    % The nodes with greatest centrality are "hub" nodes. The algorithm
+    % The nodes with greatest centrality are 'hub' nodes. The algorithm
     % finds the number of all shortest paths between every set of two
     % nodes that passes through any one node. The greater number of
     % paths through the node, the greater centrality
@@ -290,12 +290,12 @@ for zz = 1:length(selectedFolders)
     %make parameter file
     fid = fopen(fullfile(outputDir, 'analysis_parameters.txt'),'w');
     fprintf(fid,'List of paramters\n\n');
-    fprintf(fid,"\tFrames per second = %f\n", real_FPS);
-    fprintf(fid,"\tFC_method = %s\n", params.FC_method);
-    fprintf(fid,"\tFC_inactive = %s\n", params.FC_inactive);
-    fprintf(fid,"\tFC_islands = %s\n", FC_islands);
-    fprintf(fid,"\tCa event threshold = %.2f\n", params.event_thresh);
-    fprintf(fid,"\tNo weight threshold applied to FC matrix\n");
+    fprintf(fid,'\tFrames per second = %f\n', real_FPS);
+    fprintf(fid,'\tFC_method = %s\n', params.FC_method);
+    fprintf(fid,'\tFC_inactive = %s\n', params.FC_inactive);
+    fprintf(fid,'\tFC_islands = %s\n', FC_islands);
+    fprintf(fid,'\tCa event threshold = %.2f\n', params.event_thresh);
+    fprintf(fid,'\tNo weight threshold applied to FC matrix\n');
     fclose(fid);
     
     %write to separate files for all the output vectors
