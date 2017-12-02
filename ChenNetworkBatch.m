@@ -144,22 +144,33 @@ for zz = 1:length(selectedFolders)
     addpath('FluoroSNNAP_code');
     addpath('textprogressbar');
     addpath(fullfile('FluoroSNNAP_code', 'oopsi-master'));
-    AnalyzeData_2(selected_folder, real_FPS);
+    rawData = AnalyzeData_2(selected_folder, real_FPS);
     
-    % Skip any video with fewer than 10 frames
+    % Run FluoroSNNAP Processing if video has at least 10 frames
     if size(rawData{1}.F_cell,2) < 10
         continue;
     end
     
-    % Run FluoroSNNAP Processing
     processed_analysis = PostProcess_test(selected_folder);
-    
     disp('Running BCT network analysis');
     
     % Extract FC matrix from FluoroSnnap
 
     load(fullfile(outputDir, 'processed_analysis.mat'));
     fc_matrix = processed_analysis.FC.CC.C;
+    spikes = processed_analysis.Spikes_cell;
+    
+    % Check if video has any spikes, skip if not
+    anySpikes = 0;
+    for aa = 1:length(spikes)
+        if ~isempty(spikes{aa})
+            anySpikes = 1;
+            break;
+        end
+    end
+    if ~anySpikes
+        continue;
+    end
     
     % remove islands if called for
     if (strcmpi(FC_islands, 'remove islands'))
