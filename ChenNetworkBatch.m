@@ -146,6 +146,11 @@ for zz = 1:length(selectedFolders)
     addpath(fullfile('FluoroSNNAP_code', 'oopsi-master'));
     AnalyzeData_2(selected_folder, real_FPS);
     
+    % Skip any video with fewer than 10 frames
+    if size(rawData{1}.F_cell,2) < 10
+        continue;
+    end
+    
     % Run FluoroSNNAP Processing
     processed_analysis = PostProcess_test(selected_folder);
     
