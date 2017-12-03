@@ -160,15 +160,17 @@ for zz = 1:length(selectedFolders)
     fc_matrix = processed_analysis.FC.CC.C;
     spikes = processed_analysis.Spikes_cell;
     
-    % Check if video has any spikes, skip if not
+ % Check if video has any spikes, skip if not
     anySpikes = 0;
     for aa = 1:length(spikes)
         if ~isempty(spikes{aa})
-            anySpikes = 1;
+            anySpikes = anySpikes + 1;
+        end
+        if anySpikes > 1
             break;
         end
     end
-    if ~anySpikes
+    if anySpikes < 2
         continue;
     end
     
@@ -184,7 +186,7 @@ for zz = 1:length(selectedFolders)
     % initialize output struct
     output = struct();
     
-    % SYNCHRONIZATOIN
+    % SYNCHRONIZATION
     % Not a network measure, but a measure of whether groups of neurons in
     % the organoid all fire together. GSI is between -1 and 1. Where 0 is 
     % total independence of all neurons, 1 is all neurons only fired
@@ -237,6 +239,7 @@ for zz = 1:length(selectedFolders)
     % modularity) which has been proven to be NP-hard. So this algorithm
     % provides a best estimate of the true modularity. Cj is the optimal
     % community structure (ie the actual modules).
+    fc_matrix
     [Cj, output.modularity] = modularity_und(fc_matrix);
     
     
