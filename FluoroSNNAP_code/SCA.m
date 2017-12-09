@@ -177,6 +177,8 @@ end
 % series are fully uncorrelated, all eigenvalues will distribute around 1.
 % If all the series are fully correlated, max eigenval = M and the rest
 % fall to 0.
+
+C(isnan(C)) = 0;
 [V,D] = eig(C);
 D = diag(D);
 %% Significance testing with surrogates. Construct surrogate time series
@@ -294,6 +296,7 @@ for n=1:N % Index for surrogate testing
             end
     end
     Rall(:,:,n) = R;
+    R(isnan(R)) = 0;
     [~,Dtmp] = eig(R);
     Dsur(:,n) = diag(Dtmp);
 end
