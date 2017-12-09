@@ -33,6 +33,7 @@ if(max(x)<10) % deltaF/F0 being used
     height = params.event_amplitude;
 else % Either raw trace or intensity above background being used
     height = params.event_amplitude*min(x);
+    disp("check");
 end
 Call = zeros(length(spikes),length(x));
 if(params.parallel)
@@ -74,5 +75,6 @@ spks = find(max(Call)>thr);
 try
     spks([2*fps diff(spks)]<=1.5*fps)=[];
     spks = spks*fps/10;
+    spks = floor(spks);
 end
 % OverlaySpikes(xorig,spks);
